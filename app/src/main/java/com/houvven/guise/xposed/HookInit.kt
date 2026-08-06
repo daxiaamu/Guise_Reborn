@@ -17,7 +17,7 @@ import com.houvven.guise.xposed.hook.TimeZoneHook
 import com.houvven.guise.xposed.hook.UniquelyIdHook
 import com.houvven.guise.xposed.hook.location.CellLocationHook
 import com.houvven.guise.xposed.hook.location.LocationHook
-import com.houvven.guise.xposed.hook.netowork.NetworkHook
+import com.houvven.guise.xposed.hook.network.NetworkHook
 import com.houvven.guise.xposed.other.ApplicationListPass
 import com.houvven.guise.xposed.other.BlankPass
 import com.houvven.ktx_xposed.LoadPackageHookAdapter
@@ -90,7 +90,6 @@ class HookInit : XposedModule() {
             HookFeature.APP_VERSION -> "AppVersion" to BuildConfigHook()
         }
 
-    /** Obtains an application context without modifying Application or Activity lifecycle methods. */
     private fun attachLogContextWhenReady(attempt: Int = 0) {
         if (XposedLogger.tryAttachContext()) return
         if (!XposedLogger.needsDeliveryContext() || attempt >= LOG_CONTEXT_MAX_ATTEMPTS) return
