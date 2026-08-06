@@ -11,6 +11,9 @@ import android.util.Log
 import com.houvven.ktx_xposed.hook.ModernXposedRuntime
 import java.io.PrintWriter
 import java.io.StringWriter
+import java.util.concurrent.ScheduledFuture
+import java.util.concurrent.ScheduledThreadPoolExecutor
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 
@@ -31,11 +34,21 @@ object XposedLogger {
     private val deliveryFailureReported = AtomicBoolean()
     private val categoryContext = ThreadLocal<String?>()
     private val pendingEvents = ArrayDeque<RuntimeLogEvent>()
+    private val deliveryExecutor by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
+        ScheduledThreadPoolExecutor(1) { runnable ->
+            Thread(runnable, "GuiseLogBatch").apply { isDaemon = true }
+        }.apply {
+            removeOnCancelPolicy = true
+            setExecuteExistingDelayedTasksAfterShutdownPolicy(false)
+        }
+    }
+
     private var applicationContext: Context? = null
     private var startupCompleted = false
     private var deliveryToken: String? = null
     private var detailedLogging = false
     private var contextProvider: (() -> Context?)? = null
+    private var scheduledFlush: ScheduledFuture<*>? = null
 
     val currentCategory: String
         get() = categoryContext.get() ?: DEFAULT_CATEGORY
@@ -84,7 +97,7 @@ object XposedLogger {
     fun finishStartup() {
         startupCompleted = true
         tryAttachContextLocked()
-        flushPending()
+        flushOrScheduleLocked()
     }
 
     @Synchronized
@@ -94,6 +107,7 @@ object XposedLogger {
     @Synchronized
     fun tryAttachContext(): Boolean {
         tryAttachContextLocked()
+        if (startupCompleted) flushOrScheduleLocked()
         return applicationContext != null
     }
 
@@ -132,7 +146,7 @@ object XposedLogger {
             pendingEvents.removeFirst()
         }
         tryAttachContextLocked()
-        if (startupCompleted) flushPending()
+        if (startupCompleted) flushOrScheduleLocked()
     }
 
     private fun tryAttachContextLocked() {
@@ -141,10 +155,36 @@ object XposedLogger {
         applicationContext = context.applicationContext ?: context
     }
 
-    private fun flushPending() {
+    private fun flushOrScheduleLocked() {
+        if (applicationContext == null || pendingEvents.isEmpty()) return
+        if (pendingEvents.size >= RuntimeLogProtocol.MAX_DELIVERY_BATCH_SIZE) {
+            flushPendingLocked()
+        } else {
+            scheduleFlushLocked(RuntimeLogProtocol.DELIVERY_DELAY_MS)
+        }
+    }
+
+    private fun scheduleFlushLocked(delayMs: Long) {
+        if (applicationContext == null || pendingEvents.isEmpty()) return
+        if (scheduledFlush?.isDone == false) return
+        scheduledFlush = deliveryExecutor.schedule(
+            {
+                synchronized(XposedLogger) {
+                    scheduledFlush = null
+                    flushPendingLocked()
+                }
+            },
+            delayMs,
+            TimeUnit.MILLISECONDS,
+        )
+    }
+
+    private fun flushPendingLocked() {
+        scheduledFlush?.cancel(false)
+        scheduledFlush = null
         val context = applicationContext ?: return
         if (pendingEvents.isEmpty()) return
-        val snapshot = pendingEvents.toList()
+        val snapshot = pendingEvents.take(RuntimeLogProtocol.MAX_DELIVERY_BATCH_SIZE)
         runCatching {
             val intent = Intent(RuntimeLogProtocol.DELIVERY_ACTION)
                 .setComponent(
@@ -171,6 +211,9 @@ object XposedLogger {
                 pendingEvents.removeFirst()
             }
             deliveryFailureReported.set(false)
+            if (pendingEvents.isNotEmpty()) {
+                scheduleFlushLocked(RuntimeLogProtocol.DELIVERY_DELAY_MS)
+            }
         }.onFailure { error ->
             val module = ModernXposedRuntime.moduleOrNull
             if (module != null && deliveryFailureReported.compareAndSet(false, true)) {
@@ -178,6 +221,7 @@ object XposedLogger {
                     module.log(Log.WARN, "$TAG_PREFIX/Logger", "Unable to deliver runtime logs", error)
                 }
             }
+            scheduleFlushLocked(RuntimeLogProtocol.DELIVERY_RETRY_DELAY_MS)
         }
     }
 
