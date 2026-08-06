@@ -49,6 +49,7 @@ object XposedLogger {
     private var detailedLogging = false
     private var contextProvider: (() -> Context?)? = null
     private var scheduledFlush: ScheduledFuture<*>? = null
+    private var retryScheduled = false
 
     val currentCategory: String
         get() = categoryContext.get() ?: DEFAULT_CATEGORY
@@ -157,20 +158,26 @@ object XposedLogger {
 
     private fun flushOrScheduleLocked() {
         if (applicationContext == null || pendingEvents.isEmpty()) return
+        if (scheduledFlush?.isDone == false && retryScheduled) return
         if (pendingEvents.size >= RuntimeLogProtocol.MAX_DELIVERY_BATCH_SIZE) {
+            scheduledFlush?.cancel(false)
+            scheduledFlush = null
+            retryScheduled = false
             flushPendingLocked()
-        } else {
-            scheduleFlushLocked(RuntimeLogProtocol.DELIVERY_DELAY_MS)
+        } else if (scheduledFlush?.isDone != false) {
+            scheduleFlushLocked(RuntimeLogProtocol.DELIVERY_DELAY_MS, isRetry = false)
         }
     }
 
-    private fun scheduleFlushLocked(delayMs: Long) {
+    private fun scheduleFlushLocked(delayMs: Long, isRetry: Boolean) {
         if (applicationContext == null || pendingEvents.isEmpty()) return
         if (scheduledFlush?.isDone == false) return
+        retryScheduled = isRetry
         scheduledFlush = deliveryExecutor.schedule(
             {
                 synchronized(XposedLogger) {
                     scheduledFlush = null
+                    retryScheduled = false
                     flushPendingLocked()
                 }
             },
@@ -182,6 +189,7 @@ object XposedLogger {
     private fun flushPendingLocked() {
         scheduledFlush?.cancel(false)
         scheduledFlush = null
+        retryScheduled = false
         val context = applicationContext ?: return
         if (pendingEvents.isEmpty()) return
         val snapshot = pendingEvents.take(RuntimeLogProtocol.MAX_DELIVERY_BATCH_SIZE)
@@ -212,7 +220,7 @@ object XposedLogger {
             }
             deliveryFailureReported.set(false)
             if (pendingEvents.isNotEmpty()) {
-                scheduleFlushLocked(RuntimeLogProtocol.DELIVERY_DELAY_MS)
+                scheduleFlushLocked(RuntimeLogProtocol.DELIVERY_DELAY_MS, isRetry = false)
             }
         }.onFailure { error ->
             val module = ModernXposedRuntime.moduleOrNull
@@ -221,7 +229,7 @@ object XposedLogger {
                     module.log(Log.WARN, "$TAG_PREFIX/Logger", "Unable to deliver runtime logs", error)
                 }
             }
-            scheduleFlushLocked(RuntimeLogProtocol.DELIVERY_RETRY_DELAY_MS)
+            scheduleFlushLocked(RuntimeLogProtocol.DELIVERY_RETRY_DELAY_MS, isRetry = true)
         }
     }
 
