@@ -1,6 +1,6 @@
 @file:Suppress("DEPRECATION")
 
-package com.houvven.guise.xposed.hook.netowork
+package com.houvven.guise.xposed.hook.network
 
 import android.telephony.CellIdentityCdma
 import android.telephony.CellIdentityGsm
@@ -19,9 +19,9 @@ import com.houvven.ktx_xposed.hook.setSomeSameNameMethodResultForAnyClass
 
 internal class SimHook : LoadPackageHandler {
     override fun onHook() {
-        if (config.simOperator.isNotBlank()) this.hookSimOperator()
-        if (config.simOperatorName.isNotBlank()) this.hookSimOperatorName()
-        if (config.simCountry.isNotBlank()) this.hookSimCountryIso()
+        if (config.simOperator.isNotBlank()) hookSimOperator()
+        if (config.simOperatorName.isNotBlank()) hookSimOperatorName()
+        if (config.simCountry.isNotBlank()) hookSimCountryIso()
     }
 
     internal fun hookMobileType(networkType: Int) {
@@ -52,15 +52,13 @@ internal class SimHook : LoadPackageHandler {
         val mccInt = mcc.toInt()
         val mncInt = mnc.toInt()
 
-        TelephonyManager::class.java.run {
-            setSomeSameNameMethodResult(
-                "getSimOperatorNumericForPhone",
-                "getNetworkOperatorForPhone",
-                "getSimOperator",
-                "getNetworkOperator",
-                value = simOperator,
-            )
-        }
+        TelephonyManager::class.java.setSomeSameNameMethodResult(
+            "getSimOperatorNumericForPhone",
+            "getNetworkOperatorForPhone",
+            "getSimOperator",
+            "getNetworkOperator",
+            value = simOperator,
+        )
 
         arrayOf(
             SubscriptionInfo::class.java,
@@ -69,9 +67,9 @@ internal class SimHook : LoadPackageHandler {
             CellIdentityLte::class.java,
             CellIdentityNr::class.java,
             CellIdentityTdscdma::class.java,
-            CellIdentityWcdma::class.java
-        ).forEach {
-            it.run {
+            CellIdentityWcdma::class.java,
+        ).forEach { identityClass ->
+            identityClass.run {
                 findMethodExactIfExists("getMcc")?.setMethodResult(mccInt)
                 findMethodExactIfExists("getMnc")?.setMethodResult(mncInt)
                 findMethodExactIfExists("getMccString")?.setMethodResult(mcc)

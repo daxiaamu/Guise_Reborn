@@ -23,7 +23,10 @@ object RuntimeLogProtocol {
     const val DELIVERY_RECEIVER = "com.houvven.guise.log.RuntimeLogReceiver"
     const val DELIVERY_EVENTS_EXTRA = "events"
     const val DELIVERY_TOKEN_EXTRA = "token"
-    const val MAX_PENDING_EVENTS = 32
+    const val MAX_PENDING_EVENTS = 64
+    const val MAX_DELIVERY_BATCH_SIZE = 50
+    const val DELIVERY_DELAY_MS = 5_000L
+    const val DELIVERY_RETRY_DELAY_MS = 30_000L
 
     private const val FORMAT_VERSION = "2"
     private val encoder = Base64.getUrlEncoder().withoutPadding()
