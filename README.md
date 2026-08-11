@@ -26,6 +26,8 @@
 
 Guise Reborn 是 Guise 的社区维护续作，是一个面向 LSPosed/Modern Xposed 的应用运行环境伪装模块。它可针对用户明确选中的目标应用，修改设备、系统、标识符、网络、SIM、Wi-Fi、定位、基站、语言、时区、电池及隐私相关 API 的返回结果。
 
+> 机场推荐：[白月光，稳定高速](https://www.sibker.com/register?invite_code=2XQR1UUz)
+
 本仓库保留公开源码仓库的 Git 历史，并基于原作者公开表示“感兴趣的可以接手继续开发”的版本继续维护：
 
 - 原项目：[Houvven/Guise](https://github.com/Houvven/Guise)
