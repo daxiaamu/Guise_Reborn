@@ -1,7 +1,10 @@
 package com.houvven.guise.ui.utils
 
 import android.content.Context
+import android.hardware.camera2.CameraManager
 import android.os.Build
+import android.telephony.TelephonyManager
+import android.webkit.WebSettings
 import com.houvven.guise.db.Device
 import com.houvven.guise.db.DeviceDBHelper
 import com.houvven.guise.module.preset.CarrierPreset
@@ -36,6 +39,21 @@ suspend fun oneClickRandom(state: ModuleConfigState, context: Context) {
             language = presetCatalog.languages.randomOrNull()?.value.orEmpty(),
             network = network,
             carrier = carrier,
+            actualCameraCount = runCatching {
+                context.getSystemService(CameraManager::class.java).cameraIdList.size
+            }.getOrNull(),
+            maxModems = runCatching {
+                val telephony = context.getSystemService(TelephonyManager::class.java)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    telephony.activeModemCount
+                } else {
+                    @Suppress("DEPRECATION")
+                    telephony.phoneCount
+                }
+            }.getOrNull(),
+            baseWebViewUserAgent = runCatching {
+                WebSettings.getDefaultUserAgent(context)
+            }.getOrDefault(""),
         )
     }
 
@@ -46,7 +64,10 @@ suspend fun oneClickRandom(state: ModuleConfigState, context: Context) {
         val normalizedDevice = deviceCode.ifBlank { modelName.fingerprintSafePart() }
         val version = values.android.value.substringBefore('|')
         val api = values.android.value.substringAfter('|')
+        val profileApi = api.toIntOrNull() ?: MIN_PROFILE_API
         val generatedBuildId = Randoms.randomBuildId(version)
+        val gpu = selectGpuIdentity(values.brand, profileApi)
+        val mobileNetwork = values.network.value.toIntOrNull()?.isMobileNetwork() == true
 
         brand.value = values.brand
         manufacturer.value = values.brand
@@ -66,13 +87,18 @@ suspend fun oneClickRandom(state: ModuleConfigState, context: Context) {
             androidVersion = version,
             buildId = generatedBuildId,
         )
-        gpuVendor.value = ""
-        gpuRenderer.value = ""
-        cameraCount.value = ""
+        gpuVendor.value = gpu.vendor
+        gpuRenderer.value = gpu.renderer
+        cameraCount.value = selectVisibleCameraCount(
+            values.actualCameraCount ?: DEFAULT_CAMERA_COUNT_CAP,
+        ).toString()
 
         networkType.value = values.network.value
         applyNetworkSpecificValues(values.network.value.toIntOrNull(), values.carrier)
-        visibleSimCount.value = ""
+        visibleSimCount.value = selectVisibleSimCount(
+            values.maxModems ?: DEFAULT_MODEM_COUNT_CAP,
+            mobileNetwork = mobileNetwork,
+        ).toString()
 
         Randoms.randomCoordinates().let { (lat, lon) ->
             latitude.value = lat.toString()
@@ -90,8 +116,12 @@ suspend fun oneClickRandom(state: ModuleConfigState, context: Context) {
         batteryLevel.value = Randoms.randomBatteryLevel().toString()
         language.value = values.language
         timeZone.value = TimeZonePresetRepository.randomId()
-        webViewUserAgent.value = ""
-        hideExternalAudioDevices.value = false
+        webViewUserAgent.value = rewriteWebViewUserAgent(
+            baseUserAgent = values.baseWebViewUserAgent,
+            androidVersion = version,
+            model = modelName,
+        )
+        hideExternalAudioDevices.value = randomizeExternalAudioVisibility()
         versionCode.value = ""
         versionName.value = ""
     }
@@ -173,9 +203,14 @@ private data class RandomSelection(
     val language: String,
     val network: ResourcePreset,
     val carrier: CarrierPreset?,
+    val actualCameraCount: Int?,
+    val maxModems: Int?,
+    val baseWebViewUserAgent: String,
 )
 
 private fun String.fingerprintSafePart(): String =
     trim().replace(Regex("[\\s/:]+"), "_").ifBlank { "device" }
 
 private const val MIN_PROFILE_API = 29
+private const val DEFAULT_CAMERA_COUNT_CAP = 4
+private const val DEFAULT_MODEM_COUNT_CAP = 2
