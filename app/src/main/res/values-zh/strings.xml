@@ -27,6 +27,7 @@
     <string name="title_blank_pass">空白通行证</string>
     <string name="device_brand">品牌</string>
     <string name="device_manufacturer">制造商</string>
+    <string name="device_manufacturer_summary">留空时不修改原制造商；一键随机时会与品牌同步填写。</string>
     <string name="device_model">型号</string>
     <string name="device_product">产品</string>
     <string name="device_device">设备</string>

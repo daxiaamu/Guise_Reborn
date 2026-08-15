@@ -26,9 +26,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -38,9 +40,9 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.houvven.guise.ContextAmbient
 import com.houvven.guise.R
-import com.houvven.guise.db.DeviceDBHelper
+import com.houvven.guise.device.DeviceCatalog
+import com.houvven.guise.device.DeviceCatalogRepository
 import com.houvven.guise.module.PresetAdapter
 import com.houvven.guise.module.preset.CarrierPresetRepository
 import com.houvven.guise.module.preset.PresetRepository
@@ -54,7 +56,6 @@ import kotlin.math.roundToInt
 private val localSetValue = mutableStateOf({ _: String -> })
 private val localPreset = mutableStateOf(emptyList<PresetAdapter>())
 
-private val allBrands = DeviceDBHelper(ContextAmbient.current).use { it.getAllBrand() }
 
 @Composable
 private fun ConfigEditorItems(state: ModuleConfigState, launch: () -> Unit) {
@@ -90,6 +91,18 @@ private fun ConfigEditorItems(state: ModuleConfigState, launch: () -> Unit) {
 
 
     val context = LocalContext.current
+    val deviceCatalog by produceState<DeviceCatalog?>(null, context) {
+        value = DeviceCatalogRepository.get(context)
+    }
+    var selectedDatabaseBrandKey by remember(state) { mutableStateOf<String?>(null) }
+    LaunchedEffect(deviceCatalog, state) {
+        if (selectedDatabaseBrandKey == null) {
+            deviceCatalog?.brandForConfiguredValue(state.brand.value)?.let { brand ->
+                selectedDatabaseBrandKey = brand.key
+                normalizeConfiguredBrandIdentity(state, brand.buildBrand, brand.manufacturer)
+            }
+        }
+    }
     val localConfiguration = LocalConfiguration.current
     val carrierPresets = remember(context) { CarrierPresetRepository.get(context) }
     val presetCatalog = remember(context) { PresetRepository.get(context) }
@@ -109,45 +122,41 @@ private fun ConfigEditorItems(state: ModuleConfigState, launch: () -> Unit) {
     PresetInputBox(
         state = state.brand,
         label = stringResource(R.string.device_brand),
-        preset = allBrands.map {
+        preset = deviceCatalog?.brands.orEmpty().map {
             object : PresetAdapter {
-                override val label: String = it.value
+                override val label: String = it.displayName
                 override val value: String = it.key
             }
         },
-        setValue = { value ->
-            val previousBrand = state.brand.value
-            state.brand.value = value
-            if (state.manufacturer.value.isBlank() || state.manufacturer.value == previousBrand) {
-                state.manufacturer.value = value
+        showOperateIcon = deviceCatalog != null,
+        setValue = { databaseKey ->
+            deviceCatalog?.brandByKey(databaseKey)?.let { brand ->
+                selectedDatabaseBrandKey = databaseKey
+                applySelectedBrandIdentity(state, brand.buildBrand, brand.manufacturer)
             }
         },
     )
-    InputBox(state.manufacturer, stringResource(R.string.device_manufacturer))
+    InputBox(
+        state.manufacturer,
+        stringResource(R.string.device_manufacturer),
+        supportingText = stringResource(R.string.device_manufacturer_summary),
+    )
     PresetInputBox(
         state = state.model,
         label = stringResource(R.string.device_model),
-        preset = DeviceDBHelper(context).use { dbHelper ->
-            dbHelper.getDevicesByBrand(state.brand.value)
-                .filterNot { it.modelName.isNullOrBlank() || it.model.isNullOrBlank() }
-                .map {
-                    val name = if (it.verName == "#" || it.verName == null) it.modelName!!
-                    else "${it.modelName!!} (${it.verName.removePrefix("#")})"
-                    object : PresetAdapter {
-                        override val label: String = "$name · ${it.model}"
-                        override val value: String =
-                            "${it.model!!}:${it.codeAlias?.takeIf(String::isNotBlank) ?: it.code.orEmpty()}"
-                    }
+        preset = selectedDatabaseBrandKey
+            ?.let { deviceCatalog?.brandByKey(it)?.models }
+            .orEmpty()
+            .map { device ->
+                val name = device.versionName?.let { "${device.name} ($it)" } ?: device.name
+                object : PresetAdapter {
+                    override val label: String = "$name · ${device.model}"
+                    override val value: String = "${device.model}:${device.device}"
                 }
-        },
-        showOperateIcon = allBrands.keys.any { it.equals(state.brand.value, ignoreCase = true) },
+            },
+        showOperateIcon = deviceCatalog != null && selectedDatabaseBrandKey != null,
         setValue = { value ->
-            val previousDevice = state.device.value
-            state.model.value = value.substringBefore(":")
-            state.device.value = value.substringAfter(":", missingDelimiterValue = "")
-            if (state.product.value.isBlank() || state.product.value == previousDevice) {
-                state.product.value = state.device.value
-            }
+            applyDevicePreset(state, value)
         }
     )
     InputBox(state.device, stringResource(R.string.device_device))

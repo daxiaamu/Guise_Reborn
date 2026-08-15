@@ -34,7 +34,7 @@ Guise Reborn 是 Guise 的社区维护续作，是一个面向 LSPosed/Modern Xp
 - 本仓库采用的源码上游：[AlliotTech/Guise](https://github.com/AlliotTech/Guise)
 - 上述源码仓库的 GitHub Fork 上游：[shenghuang147/Guise](https://github.com/shenghuang147/Guise)
 
-> 维护者：大侠阿木。当前正式版本为 `2.0.0`；README 中的维护版内容均位于原作者说明之前。
+> 维护者：大侠阿木。当前正式版本为 `2.0.1`；README 中的维护版内容均位于原作者说明之前。
 
 ## 当前技术基线
 
@@ -58,14 +58,13 @@ MMKV 2 官方 Android 原生库当前仅提供 64 位构建，因此 Guise Rebor
 
 | 数据 | 当前规模 |
 | --- | ---: |
-| 设备数据库原始记录 | 12,183 条 |
-| 配置界面可选品牌 | 26 个 |
-| 配置界面可选机型 | 8,533 个 |
+| 内置设备品牌 | 26 个 |
+| 内置可选机型 | 8,533 个 |
 | 全球运营商记录 | 1,597 条 |
 | 运营商覆盖国家/地区 | 226 个 |
 | MCC 覆盖 | 233 个 |
 
-机型数量按配置界面实际支持的手机、平板、电视、电视盒子和手表类型去重统计；运营商数量按内置有效 MCC/MNC 记录统计。对应数据版本和许可证见 `devices.NOTICE.txt` 与 `carriers.NOTICE.txt`。
+机型数量按配置界面实际支持的手机、平板、电视、电视盒子和手表类型去重统计；运营商数量按内置有效 MCC/MNC 记录统计。设备品牌、真实 Build 品牌/制造商值及其全部型号统一维护在单个 `devices.json`；对应数据版本和许可证见 `devices.NOTICE.txt` 与 `carriers.NOTICE.txt`。
 
 与原版 Guise 1.1.2 相比，面向目标应用的独立伪装/隐私配置由 **35 项增加到 40 项**，净新增 **5 项**：制造商、Build ID、显示大小（DPI）、时区和应用列表可见性。这里不把主题、预测性返回、更新检测等管理端设置计入伪装项目。
 
@@ -87,6 +86,7 @@ Guise Reborn 并非只为原版更换界面。维护版保留按应用伪装的�
 - 日志投递不再为了取得目标应用 `Context` 而 Hook `Application.attach` 或 `Activity.onCreate`。关闭详细日志且没有需要投递的事件时，不查找目标应用 `Context`、不排队重试也不发送广播；有事件时才短时获取当前 `Application`，避免日志功能额外留下常驻生命周期 Hook。
 - 移除目标进程启动后的 Hook 成功 Toast；成功明细进入可选的详细日志，错误和必要状态始终记录，避免打断目标应用正常使用。
 - 数据预设从 UI 代码移入资源：Android 版本、SDK、DPI、网络、语言等集中维护在 `app/src/main/res/raw/presets.json`。
+- 设备目录由 SQLite 与 UI 映射重构为单一层级化 `devices.json`：26 个品牌直接包含 8,533 个可选型号，并分别保存显示名、数据库来源键、`Build.BRAND` 和 `Build.MANUFACTURER`。目录不参与启动首帧，首次进入设备选择或执行一键随机时在 IO 协程解析一次并缓存。构建测试会校验品牌键、型号唯一性、必填字段及关键厂商大小写。
 - 升级 Room、MMKV、KSP、协程和序列化；移除 Accompanist、Ktor 1.x、旧 SQLite shell 及原有通用 `lib` 模块。
 - 导入导出改用 MediaStore 与系统文件选择器，移除“所有文件访问”、旧外部存储权限及明文网络配置。
 - Release 和 Guise Test 均启用 R8；Guise 只保留 LSPosed 必须识别的模块入口、构造器和框架回调，私有实现及配置类仍可混淆。配置编辑状态改用显式类型安全映射，不再依赖混淆后不可靠的同名字段反射。正式构建还会自动校验入口没有被改名、内部名称没有被意外保留，避免“模块已进入作用域但实际未加载”的静默失效。
@@ -106,7 +106,7 @@ Guise Reborn 并非只为原版更换界面。维护版保留按应用伪装的�
 ### 3. 设备、系统与应用版本 Hook
 
 - 支持品牌、制造商、型号、设备代号、产品、主板、硬件/CPU 代号、Build ID 和 Fingerprint；`Build.BRAND` 与 `Build.MANUFACTURER` 不再被错误地视为同一字段。
-- 品牌和型号选择使用内置设备数据库，品牌会为制造商提供可继续编辑的默认值，型号会联动设备代号与产品代号；选择界面加入搜索并修正重复拖动手柄等交互问题。
+- 品牌和型号选择使用单一内置 JSON 设备目录。界面显示名、目录键、`Build.BRAND` 与 `Build.MANUFACTURER` 明确分离，例如“一加”只用于显示，实际写入 `OnePlus`；OPPO 写入规范大写值。主动选择品牌时会填入可继续编辑的默认制造商，制造商留空则不 Hook。型号只在数据明确提供设备字段时联动 `DEVICE`，不再猜测或覆盖独立的 `PRODUCT`。
 - 一键随机会从同一台设备和同一组 Android 版本数据生成品牌、制造商、型号、设备/产品代号、版本、SDK、Build ID 与 Fingerprint，避免各字段来自互不相关的随机样本。Fingerprint 的独立随机按钮也会同步生成对应 Build ID。
 - Android 版本与 SDK/API 预设补齐至 Android 17 / API 37，包含 Android 12L / API 32。
 - **新增显示大小（DPI）Hook**：支持 72–1000 的 `densityDpi`，覆盖 `Resources.getDisplayMetrics()`、`Resources.getConfiguration()`、`Display.getMetrics()` 和 `Display.getRealMetrics()`，同步修正 `density`、`scaledDensity` 及 dp 配置，并保留原字体缩放比例。界面同时估算对应的“最小宽度”dp，方便和开发者选项中的显示大小建立关系。
@@ -249,7 +249,7 @@ Guise Reborn 并非只为原版更换界面。维护版保留按应用伪装的�
 - **作用域语义变化**：列表勾选才代表启用 Hook；仅保存配置不会隐式启用应用。
 - **激活状态简化**：移除“未激活”“不检测模块激活状态”和“跟随 LSPosed 配置”；管理端只报告 Xposed service 是否可用，作用域只由应用勾选同步。
 - **版本伪装变化**：API 37 目标应用优先依赖 `PackageInfo` 返回值修改，旧式 `static final BuildConfig` 篡改不再被视为可靠实现。
-- **设备配置兼容**：旧配置没有制造商和 Build ID 字段时仍可读取；制造商留空会继续回退到原有品牌值。新版一键随机会补齐更多相互关联字段，因此保存后的具体随机值形态会与旧版不同。
+- **设备配置兼容**：旧配置没有制造商和 Build ID 字段时仍可读取；旧的内部品牌键、本地化显示名及跟随品牌的制造商会在打开配置时规范为真实 Build 值。制造商留空表示不 Hook `Build.MANUFACTURER`，不会再隐式回退到品牌。新版一键随机会从同一品牌/型号记录填入规范品牌和制造商，因此保存后的具体随机值形态会与旧版不同。
 - **日志实现变化**：移除旧日志 Provider、目标进程直接写管理端数据库和 Hook 成功 Toast；旧日志数据库不迁移，新的运行日志按容量归档。
 - **存储权限变化**：使用系统媒体/文件接口，不再请求所有文件访问和旧式外部存储权限。
 - **预测性返回**：Android 13+ 由系统返回框架提供能力；应用内开关控制页面预览动画，系统总开关和应用重启仍会影响最终效果。
@@ -260,7 +260,7 @@ Guise Reborn 并非只为原版更换界面。维护版保留按应用伪装的�
 
 ## 数据来源与预设
 
-- 品牌与型号数据库来自 [KHwang9883/MobileModels](https://github.com/KHwang9883/MobileModels) 的[官方 CSV 导出](https://github.com/KHwang9883/MobileModels-csv)，数据库部分遵循 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)。来源版本与转换说明见 `app/src/main/assets/devices.NOTICE.txt`。
+- 品牌与型号目录来自 [KHwang9883/MobileModels](https://github.com/KHwang9883/MobileModels) 的[官方 CSV 导出](https://github.com/KHwang9883/MobileModels-csv)，设备数据部分遵循 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)。来源版本与转换说明见 `app/src/main/assets/devices.NOTICE.txt`。
 - 全球运营商预设来自 [pbakondy/mcc-mnc-list](https://github.com/pbakondy/mcc-mnc-list)，采用 MIT License。筛选规则与来源版本见 `app/src/main/assets/carriers.NOTICE.txt`。
 - Android 版本、SDK/API、DPI、网络和语言等预设位于 `app/src/main/res/raw/presets.json`。
 - 时区列表由系统标准时区 ID 生成，并支持搜索与随机选择。
@@ -352,7 +352,7 @@ sdk.dir=D\:\\AndroidSDK
 
 Guise Reborn 的应用代码采用 [GNU General Public License v3.0 or later](LICENSE) 发布。Copyright © 2026 大侠阿木及 Guise Reborn 贡献者。您可以在遵守该许可证、保留版权与许可证声明并公开相应源代码的前提下使用、修改和分发。
 
-原始 Guise 的作者署名及 Git 历史继续保留。独立数据资产维持各自的上游许可证：设备数据库为 `CC BY-NC-SA 4.0`，运营商预设为 `MIT License`；详见应用内“开放源代码许可”和对应的 `NOTICE` 文件。
+原始 Guise 的作者署名及 Git 历史继续保留。独立数据资产维持各自的上游许可证：设备目录为 `CC BY-NC-SA 4.0`，运营商预设为 `MIT License`；详见应用内“开放源代码许可”和对应的 `NOTICE` 文件。
 
 ---
 

@@ -1,4 +1,4 @@
-The bundled devices.db is derived from KHwang9883/MobileModels-csv:
+The bundled devices.json is derived from KHwang9883/MobileModels-csv:
 https://github.com/KHwang9883/MobileModels-csv
 
 Upstream data revision:
@@ -11,5 +11,5 @@ The MobileModels data is licensed under Creative Commons
 Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0):
 https://creativecommons.org/licenses/by-nc-sa/4.0/
 
-Guise Reborn converts the official CSV export to SQLite without changing the
-device records. The conversion script is tools/update_devices_db.py.
+Guise Reborn stores the maintained brand identities and the converted model records
+in one JSON catalog. The update script is tools/update_devices_catalog.py.

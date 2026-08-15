@@ -10,7 +10,7 @@ class OsBuildHook : LoadPackageHandler {
         config.run {
             mapOf(
                 arrayOf("BRAND") to brand,
-                arrayOf("MANUFACTURER") to manufacturer.ifBlank { brand },
+                arrayOf("MANUFACTURER") to manufacturer,
                 arrayOf("MODEL") to model,
                 arrayOf("PRODUCT") to product,
                 arrayOf("DEVICE") to device,

@@ -42,6 +42,7 @@
     <string name="title_blank_pass">Blank Pass</string>
     <string name="device_brand">Brand</string>
     <string name="device_manufacturer">Manufacturer</string>
+    <string name="device_manufacturer_summary">Leave blank to keep the original manufacturer unchanged. One-click randomization fills it together with the brand.</string>
     <string name="device_model">Model</string>
     <string name="device_product">Product</string>
     <string name="device_device">Device Code</string>

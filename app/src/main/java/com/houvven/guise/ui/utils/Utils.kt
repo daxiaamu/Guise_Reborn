@@ -1,7 +1,7 @@
 package com.houvven.guise.ui.utils
 
 import android.content.Context
-import com.houvven.guise.db.DeviceDBHelper
+import com.houvven.guise.device.DeviceCatalogRepository
 import com.houvven.guise.module.preset.CarrierPreset
 import com.houvven.guise.module.preset.CarrierPresetRepository
 import com.houvven.guise.module.preset.PresetRepository
@@ -13,40 +13,41 @@ import kotlinx.coroutines.withContext
 
 suspend fun oneClickRandom(state: ModuleConfigState, context: Context) {
     val values = withContext(Dispatchers.IO) {
-        val (brand, device) = DeviceDBHelper(context).use { deviceDB ->
-            val selectedBrand = deviceDB.getAllBrand().keys.random()
-            selectedBrand to deviceDB.getDevicesByBrand(selectedBrand).random()
-        }
+        val catalog = DeviceCatalogRepository.get(context)
+        val brand = catalog.brands.filter { it.models.isNotEmpty() }.random()
+        val device = brand.models.random()
         val android = PresetRepository.get(context).androidVersions
             .filter { it.value.substringAfter('|').toIntOrNull()?.let { api -> api >= 29 } == true }
             .random()
         val carrier = CarrierPresetRepository.get(context).random()
         RandomSelection(
-            brand = brand,
-            model = device.model.orEmpty(),
-            device = device.codeAlias?.takeIf(String::isNotBlank) ?: device.code.orEmpty(),
+            brand = brand.buildBrand,
+            manufacturer = brand.manufacturer,
+            model = device.model,
+            device = device.device,
             android = android.value,
             carrier = carrier,
         )
     }
 
     state.run {
-        val productCode = values.device.ifBlank { values.model.fingerprintSafePart() }
+        val fingerprintProduct = product.value.ifBlank {
+            values.device.ifBlank { values.model.fingerprintSafePart() }
+        }
         val version = values.android.substringBefore('|')
         val api = values.android.substringAfter('|')
         val generatedBuildId = Randoms.randomBuildId(version)
 
         brand.value = values.brand
-        manufacturer.value = values.brand
+        manufacturer.value = values.manufacturer
         model.value = values.model
         device.value = values.device
-        product.value = productCode
         androidVersion.value = version
         sdkInt.value = api
         buildId.value = generatedBuildId
         fingerPrint.value = Randoms.randomFingerprint(
             brand = values.brand,
-            product = productCode,
+            product = fingerprintProduct,
             device = values.device,
             androidVersion = version,
             buildId = generatedBuildId,
@@ -78,6 +79,7 @@ suspend fun oneClickRandom(state: ModuleConfigState, context: Context) {
 
 private data class RandomSelection(
     val brand: String,
+    val manufacturer: String,
     val model: String,
     val device: String,
     val android: String,

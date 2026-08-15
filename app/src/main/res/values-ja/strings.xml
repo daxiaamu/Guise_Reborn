@@ -37,6 +37,7 @@
     <string name="title_blank_pass">ブランクパス</string>
     <string name="device_brand">ブランド</string>
     <string name="device_manufacturer">メーカー</string>
+    <string name="device_manufacturer_summary">空欄の場合は元のメーカーを変更しません。一括ランダムではブランドと同時に設定します。</string>
     <string name="device_model">モデル</string>
     <string name="device_product">製品コード</string>
     <string name="device_device">デバイスコード</string>

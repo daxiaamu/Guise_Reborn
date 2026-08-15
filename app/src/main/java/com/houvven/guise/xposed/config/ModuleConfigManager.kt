@@ -204,8 +204,13 @@ private constructor(
         config.copy().also(::updateConfigFromState)
 
     private fun updateConfigFromState(target: ModuleConfig) = with(target) {
+        val previousBrand = brand
         brand = state.brand.value
-        manufacturer = state.manufacturer.value
+        manufacturer = com.houvven.guise.ui.routing.editor.resolveManufacturer(
+            previousBrand = previousBrand,
+            newBrand = brand,
+            manufacturer = state.manufacturer.value,
+        )
         model = state.model.value
         product = state.product.value
         device = state.device.value

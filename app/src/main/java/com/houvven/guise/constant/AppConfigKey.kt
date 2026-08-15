@@ -9,13 +9,10 @@ object AppConfigKey {
     const val APP_REVERSE_SORT = "app.reverse.sort"
     const val DISPLAY_SYSTEM_APP = "display.system.app"
 
-    const val DEVICE_DB_VERSION = "device.db.version"
-
     const val THEME_MODE = "theme.mode"
     const val DYNAMIC_COLOR = "dynamic.color"
     const val CUSTOM_THEME_COLOR = "custom.theme.color"
     const val PREDICTIVE_BACK = "predictive.back"
-
 
 
     @JvmStatic
