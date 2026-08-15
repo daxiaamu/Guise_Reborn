@@ -3,7 +3,7 @@
   "versionName": "2.0.1",
   "prerelease": false,
   "title": "Guise 2.0.1",
-  "notes": "## 设备目录与品牌伪装修复\n\n- 修复品牌显示名、内部查询键与真实 `Build.BRAND` 混用的问题；“一加”仅作为界面显示，实际写入 `OnePlus`，OPPO 使用规范大写值。\n- `Build.BRAND` 与 `Build.MANUFACTURER` 分别维护，支持 Google 等两者大小写不同的品牌；制造商留空时不再隐式回退到品牌。\n- 主动选择品牌时填入可编辑的默认制造商；打开旧配置时自动规范内部小写键、中文显示名及跟随品牌的旧制造商值，同时尊重用户主动留空或自定义的制造商。\n- 修正型号、DEVICE 与 PRODUCT 的职责：仅使用目录明确提供的设备字段，不再把型号别名或猜测值写入 DEVICE，也不再覆盖独立 PRODUCT。\n\n## 数据与内部实现\n\n- 将旧 SQLite 机型库和 UI 映射合并为单一层级化 `devices.json`，统一维护 26 个品牌与 8,533 个可选型号。\n- 设备目录不参与启动首帧；首次进入设备选择或执行一键随机时在 IO 协程解析一次并缓存。\n- 一键随机从同一品牌/型号记录取得规范品牌、制造商、型号和设备字段。\n- 更新工具改为直接维护同一个 JSON；增加品牌键、型号唯一性、字段完整性及关键厂商大小写回归测试。\n\n## 验证\n\n- 全量 app 单元测试通过。\n- Release lint：0 error。\n- Release 已启用 R8 与资源收缩，并通过 Xposed 入口校验。\n- 已在 Android 16 / PLK110 真机完成正式签名覆盖安装与启动检查。",
+  "notes": "- 优化机型 Hook。\n- 制造商留空时不 Hook `Build.MANUFACTURER`。",
   "releaseUrl": "https://github.com/daxiaamu/Guise_Reborn/releases/tag/v2.0.1",
   "apkUrls": [
     "https://gh-proxy.com/https://github.com/daxiaamu/Guise_Reborn/releases/download/v2.0.1/Guise-2.0.1.apk",
