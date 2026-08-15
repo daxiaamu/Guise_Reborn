@@ -13,8 +13,8 @@ import com.houvven.guise.xposed.ProcessControl
 import io.github.libxposed.service.HotReloadResult
 import io.github.libxposed.service.HookedTarget
 import io.github.libxposed.service.XposedService
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit
 
@@ -34,7 +34,6 @@ private constructor(
         state.clear()
     }
 
-    /** Saves spoofing parameters without changing the LSPosed scope. */
     fun save() {
         this.updateConfigFromState()
         persist()
@@ -46,7 +45,6 @@ private constructor(
     fun hasNoConfiguredParameters(): Boolean =
         config.hasSameParameters(ModuleConfig())
 
-    /** Returns null when the Xposed service cannot reliably answer. */
     fun hasRunningHookedTarget(): Boolean? {
         val service = ContextAmbient.xposedService ?: return null
         return runCatching {
@@ -54,7 +52,6 @@ private constructor(
         }.getOrNull()
     }
 
-    /** The single entry point for changing both selection state and LSPosed scope. */
     fun setEnabled(enabled: Boolean, notifyOnScopeError: Boolean = true) {
         config.enabled = enabled
         persist()
@@ -167,8 +164,7 @@ private constructor(
             check(PACKAGE_NAME_PATTERN.matches(config.packageName)) {
                 context.getString(R.string.invalid_package_name)
             }
-            val command =
-                "am force-stop --user current ${config.packageName}"
+            val command = "am force-stop --user current ${config.packageName}"
             val process = ProcessBuilder("su", "-c", command)
                 .redirectErrorStream(true)
                 .start()
@@ -217,15 +213,20 @@ private constructor(
         densityDpi = state.densityDpi.value.toIntOrNull() ?: -1
         networkType = state.networkType.value.toIntOrNull() ?: HooksValue.NET_UNHOOK
         fingerPrint = state.fingerPrint.value
+        gpuVendor = state.gpuVendor.value
+        gpuRenderer = state.gpuRenderer.value
+        cameraCount = state.cameraCount.value.toIntOrNull() ?: -1
         wifiSSID = state.wifiSSID.value
         wifiBSSID = state.wifiBSSID.value
         wifiMacAddress = state.wifiMacAddress.value
         simOperator = state.simOperator.value
         simOperatorName = state.simOperatorName.value
         simCountry = state.simCountry.value
+        visibleSimCount = state.visibleSimCount.value.toIntOrNull() ?: -1
         imei = state.imei.value
         phoneNum = state.phoneNum.value
         androidId = state.androidId.value
+        advertisingId = state.advertisingId.value
         lac = state.lac.value.toIntOrNull() ?: -1
         cid = state.cid.value.toIntOrNull() ?: -1
         language = state.language.value
@@ -235,6 +236,8 @@ private constructor(
         randomOffset = state.randomOffset.value
         makeWifiLocationFail = state.makeWifiLocationFail.value
         makeCellLocationFail = state.makeCellLocationFail.value
+        webViewUserAgent = state.webViewUserAgent.value
+        hideExternalAudioDevices = state.hideExternalAudioDevices.value
         versionCode = state.versionCode.value.toIntOrNull() ?: -1
         versionName = state.versionName.value
         batteryLevel = state.batteryLevel.value.toIntOrNull() ?: -1
@@ -374,6 +377,4 @@ private constructor(
             )
         }
     }
-
-
 }

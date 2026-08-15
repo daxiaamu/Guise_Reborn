@@ -7,17 +7,23 @@ import android.os.Looper
 import android.os.Process
 import android.util.Log
 import com.houvven.guise.BuildConfig
+import com.houvven.guise.xposed.hook.AdvertisingIdHook
+import com.houvven.guise.xposed.hook.AudioDeviceHook
 import com.houvven.guise.xposed.hook.BatteryHook
 import com.houvven.guise.xposed.hook.BuildConfigHook
+import com.houvven.guise.xposed.hook.CameraHook
 import com.houvven.guise.xposed.hook.DisplayDensityHook
+import com.houvven.guise.xposed.hook.GpuHook
 import com.houvven.guise.xposed.hook.LocalHook
 import com.houvven.guise.xposed.hook.OsBuildHook
 import com.houvven.guise.xposed.hook.ScreenshotsHook
+import com.houvven.guise.xposed.hook.SystemPropertiesHook
 import com.houvven.guise.xposed.hook.TimeZoneHook
 import com.houvven.guise.xposed.hook.UniquelyIdHook
+import com.houvven.guise.xposed.hook.WebViewHook
 import com.houvven.guise.xposed.hook.location.CellLocationHook
 import com.houvven.guise.xposed.hook.location.LocationHook
-import com.houvven.guise.xposed.hook.netowork.NetworkHook
+import com.houvven.guise.xposed.hook.network.NetworkHook
 import com.houvven.guise.xposed.other.ApplicationListPass
 import com.houvven.guise.xposed.other.BlankPass
 import com.houvven.ktx_xposed.LoadPackageHookAdapter
@@ -82,15 +88,20 @@ class HookInit : XposedModule() {
             HookFeature.CELL_LOCATION -> "CellLocation" to CellLocationHook()
             HookFeature.NETWORK -> "Network" to NetworkHook()
             HookFeature.OS_BUILD -> "OSBuild" to OsBuildHook()
+            HookFeature.SYSTEM_PROPERTIES -> "SystemProperties" to SystemPropertiesHook()
             HookFeature.DISPLAY_DENSITY -> "DisplayDensity" to DisplayDensityHook()
+            HookFeature.GPU -> "GPU" to GpuHook()
+            HookFeature.WEBVIEW -> "WebView" to WebViewHook()
+            HookFeature.CAMERA -> "Camera" to CameraHook()
+            HookFeature.AUDIO_DEVICES -> "AudioDevices" to AudioDeviceHook()
             HookFeature.SCREENSHOTS -> "Screenshots" to ScreenshotsHook()
             HookFeature.UNIQUE_ID -> "UniqueId" to UniquelyIdHook()
+            HookFeature.ADVERTISING_ID -> "AdvertisingId" to AdvertisingIdHook()
             HookFeature.BLANK_PASS -> "BlankPass" to BlankPass()
             HookFeature.APPLICATION_LIST -> "ApplicationList" to ApplicationListPass()
             HookFeature.APP_VERSION -> "AppVersion" to BuildConfigHook()
         }
 
-    /** Obtains an application context without modifying Application or Activity lifecycle methods. */
     private fun attachLogContextWhenReady(attempt: Int = 0) {
         if (XposedLogger.tryAttachContext()) return
         if (!XposedLogger.needsDeliveryContext() || attempt >= LOG_CONTEXT_MAX_ATTEMPTS) return

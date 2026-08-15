@@ -9,6 +9,11 @@
     public void onPackageReady(io.github.libxposed.api.XposedModuleInterface$PackageReadyParam);
 }
 
+# JNI symbol lookup depends on this binary class and method name.
+-keep,allowoptimization class com.houvven.guise.xposed.hook.VulkanPrivacyBridge {
+    private native void nativeConfigureRenderer(java.lang.String);
+}
+
 -if @kotlinx.serialization.Serializable class **
 -keepclassmembers class <1> {
    static <1>$Companion Companion;

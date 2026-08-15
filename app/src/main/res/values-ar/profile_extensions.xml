@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="device_gpu_vendor">مورّد وحدة معالجة الرسومات</string>
+    <string name="device_gpu_renderer">عارض وحدة معالجة الرسومات</string>
+    <string name="device_camera_count">عدد الكاميرات الظاهرة</string>
+    <string name="device_camera_count_summary">يحد فقط من الكاميرات التي يعرضها Android فعليًا ولا ينشئ عتادًا غير موجود</string>
+    <string name="net_visible_sim_count">عدد شرائح SIM النشطة الظاهرة</string>
+    <string name="net_visible_sim_count_summary">يحد فقط من إدخالات SubscriptionInfo النشطة الحقيقية ولا يختلق عدد أجهزة المودم أو الفتحات الفعلية</string>
+    <string name="id_advertising">معرّف الإعلانات</string>
+    <string name="other_webview_user_agent">وكيل مستخدم WebView</string>
+    <string name="other_webview_user_agent_summary">يُطبّق فقط على WebView المنشأة داخل عملية التطبيق المستهدف</string>
+    <string name="other_hide_external_audio_devices">إخفاء أجهزة الصوت الخارجية</string>
+    <string name="other_hide_external_audio_devices_summary">يصفّي نقاط الصوت الخارجية مثل Bluetooth وUSB وHDMI ومحطات الإرساء مع إبقاء الأجهزة المدمجة ظاهرة</string>
+    <string name="import_qr">استيراد صورة رمز QR</string>
+    <string name="export_qr">تصدير صورة رمز QR</string>
+</resources>

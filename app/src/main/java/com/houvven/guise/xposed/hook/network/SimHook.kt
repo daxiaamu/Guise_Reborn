@@ -1,6 +1,6 @@
 @file:Suppress("DEPRECATION")
 
-package com.houvven.guise.xposed.hook.netowork
+package com.houvven.guise.xposed.hook.network
 
 import android.telephony.CellIdentityCdma
 import android.telephony.CellIdentityGsm
@@ -9,9 +9,11 @@ import android.telephony.CellIdentityNr
 import android.telephony.CellIdentityTdscdma
 import android.telephony.CellIdentityWcdma
 import android.telephony.SubscriptionInfo
+import android.telephony.SubscriptionManager
 import android.telephony.TelephonyManager
 import com.houvven.guise.xposed.LoadPackageHandler
 import com.houvven.guise.xposed.config.HooksValue
+import com.houvven.ktx_xposed.hook.afterHookAllMethods
 import com.houvven.ktx_xposed.hook.findMethodExactIfExists
 import com.houvven.ktx_xposed.hook.setMethodResult
 import com.houvven.ktx_xposed.hook.setSomeSameNameMethodResult
@@ -19,9 +21,10 @@ import com.houvven.ktx_xposed.hook.setSomeSameNameMethodResultForAnyClass
 
 internal class SimHook : LoadPackageHandler {
     override fun onHook() {
-        if (config.simOperator.isNotBlank()) this.hookSimOperator()
-        if (config.simOperatorName.isNotBlank()) this.hookSimOperatorName()
-        if (config.simCountry.isNotBlank()) this.hookSimCountryIso()
+        if (config.simOperator.isNotBlank()) hookSimOperator()
+        if (config.simOperatorName.isNotBlank()) hookSimOperatorName()
+        if (config.simCountry.isNotBlank()) hookSimCountryIso()
+        if (config.visibleSimCount >= 0) hookVisibleSubscriptions(config.visibleSimCount)
     }
 
     internal fun hookMobileType(networkType: Int) {
@@ -34,6 +37,21 @@ internal class SimHook : LoadPackageHandler {
         )
     }
 
+    private fun hookVisibleSubscriptions(limit: Int) {
+        ACTIVE_SUBSCRIPTION_LIST_METHODS.forEach { methodName ->
+            SubscriptionManager::class.java.afterHookAllMethods(methodName) { param ->
+                val subscriptions = (param.result as? List<*>)
+                    ?.filterIsInstance<SubscriptionInfo>()
+                    ?: return@afterHookAllMethods
+                param.result = limitVisibleSubscriptions(subscriptions, limit)
+            }
+        }
+        SubscriptionManager::class.java.afterHookAllMethods("getActiveSubscriptionInfoCount") { param ->
+            val actual = param.result as? Int ?: return@afterHookAllMethods
+            param.result = minOf(actual, limit.coerceAtLeast(0))
+        }
+    }
+
     companion object {
         internal fun mobileTelephonyType(networkType: Int): Int = when (networkType) {
             HooksValue.NET_MOBILE_2G -> TelephonyManager.NETWORK_TYPE_CDMA
@@ -42,6 +60,13 @@ internal class SimHook : LoadPackageHandler {
             HooksValue.NET_MOBILE_5G -> TelephonyManager.NETWORK_TYPE_NR
             else -> TelephonyManager.NETWORK_TYPE_UNKNOWN
         }
+
+        private val ACTIVE_SUBSCRIPTION_LIST_METHODS = setOf(
+            "getActiveSubscriptionInfoList",
+            "getCompleteActiveSubscriptionInfoList",
+            "getAccessibleSubscriptionInfoList",
+            "getAvailableSubscriptionInfoList",
+        )
     }
 
     private fun hookSimOperator() {
@@ -52,15 +77,13 @@ internal class SimHook : LoadPackageHandler {
         val mccInt = mcc.toInt()
         val mncInt = mnc.toInt()
 
-        TelephonyManager::class.java.run {
-            setSomeSameNameMethodResult(
-                "getSimOperatorNumericForPhone",
-                "getNetworkOperatorForPhone",
-                "getSimOperator",
-                "getNetworkOperator",
-                value = simOperator,
-            )
-        }
+        TelephonyManager::class.java.setSomeSameNameMethodResult(
+            "getSimOperatorNumericForPhone",
+            "getNetworkOperatorForPhone",
+            "getSimOperator",
+            "getNetworkOperator",
+            value = simOperator,
+        )
 
         arrayOf(
             SubscriptionInfo::class.java,
@@ -69,9 +92,9 @@ internal class SimHook : LoadPackageHandler {
             CellIdentityLte::class.java,
             CellIdentityNr::class.java,
             CellIdentityTdscdma::class.java,
-            CellIdentityWcdma::class.java
-        ).forEach {
-            it.run {
+            CellIdentityWcdma::class.java,
+        ).forEach { identityClass ->
+            identityClass.run {
                 findMethodExactIfExists("getMcc")?.setMethodResult(mccInt)
                 findMethodExactIfExists("getMnc")?.setMethodResult(mncInt)
                 findMethodExactIfExists("getMccString")?.setMethodResult(mcc)
@@ -107,3 +130,6 @@ internal class SimHook : LoadPackageHandler {
         )
     }
 }
+
+internal fun <T> limitVisibleSubscriptions(items: List<T>, limit: Int): List<T> =
+    items.take(limit.coerceAtLeast(0))
