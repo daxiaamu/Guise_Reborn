@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="device_gpu_vendor">GPU 厂商</string>
+    <string name="device_gpu_renderer">GPU 渲染器</string>
+    <string name="device_camera_count">可见摄像头数量</string>
+    <string name="device_camera_count_summary">仅限制 Android 已公开的摄像头，不会虚构设备上不存在的硬件</string>
+    <string name="net_visible_sim_count">可见的活动 SIM 数量</string>
+    <string name="net_visible_sim_count_summary">仅限制真实的活动 SubscriptionInfo 条目；不会虚构物理调制解调器或卡槽数量</string>
+    <string name="id_advertising">广告 ID</string>
+    <string name="other_webview_user_agent">WebView 用户代理</string>
+    <string name="other_webview_user_agent_summary">仅应用于目标应用进程内创建的 WebView</string>
+    <string name="other_hide_external_audio_devices">隐藏外部音频设备</string>
+    <string name="other_hide_external_audio_devices_summary">过滤蓝牙、USB、HDMI、底座等外部音频端点，同时保留内置音频设备可见</string>
+    <string name="import_qr">导入二维码图片</string>
+    <string name="export_qr">导出二维码图片</string>
+</resources>

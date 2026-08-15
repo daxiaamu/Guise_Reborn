@@ -24,6 +24,7 @@ class HookPlanTest {
         assertEquals(
             listOf(
                 HookFeature.OS_BUILD,
+                HookFeature.SYSTEM_PROPERTIES,
                 HookFeature.DISPLAY_DENSITY,
                 HookFeature.APPLICATION_LIST,
                 HookFeature.APP_VERSION,
@@ -82,14 +83,34 @@ class HookPlanTest {
     }
 
     @Test
-    fun independentManufacturerAndBuildIdActivateDeviceSpoofing() {
+    fun buildIdentityActivatesFieldAndPropertyHooks() {
         assertEquals(
-            listOf(HookFeature.OS_BUILD),
+            listOf(HookFeature.OS_BUILD, HookFeature.SYSTEM_PROPERTIES),
             ModuleConfig(manufacturer = "Xiaomi").activeHookFeatures(),
         )
         assertEquals(
-            listOf(HookFeature.OS_BUILD),
+            listOf(HookFeature.OS_BUILD, HookFeature.SYSTEM_PROPERTIES),
             ModuleConfig(buildId = "AP3A.250101.001").activeHookFeatures(),
+        )
+    }
+
+    @Test
+    fun optionalSurfaceHooksRemainIndependent() {
+        assertEquals(
+            listOf(
+                HookFeature.GPU,
+                HookFeature.WEBVIEW,
+                HookFeature.CAMERA,
+                HookFeature.AUDIO_DEVICES,
+                HookFeature.ADVERTISING_ID,
+            ),
+            ModuleConfig(
+                gpuVendor = "Qualcomm",
+                webViewUserAgent = "Example/1.0",
+                cameraCount = 1,
+                hideExternalAudioDevices = true,
+                advertisingId = "00000000-0000-0000-0000-000000000001",
+            ).activeHookFeatures(),
         )
     }
 }

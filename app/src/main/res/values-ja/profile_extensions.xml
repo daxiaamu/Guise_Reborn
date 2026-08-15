@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="device_gpu_vendor">GPU ベンダー</string>
+    <string name="device_gpu_renderer">GPU レンダラー</string>
+    <string name="device_camera_count">表示するカメラ数</string>
+    <string name="device_camera_count_summary">Android が実際に公開しているカメラだけを制限し、存在しないハードウェアは追加しません</string>
+    <string name="net_visible_sim_count">表示するアクティブ SIM 数</string>
+    <string name="net_visible_sim_count_summary">実際のアクティブな SubscriptionInfo の件数だけを制限し、物理モデム数やスロット数は偽装しません</string>
+    <string name="id_advertising">広告 ID</string>
+    <string name="other_webview_user_agent">WebView ユーザーエージェント</string>
+    <string name="other_webview_user_agent_summary">対象アプリのプロセス内で作成された WebView にのみ適用します</string>
+    <string name="other_hide_external_audio_devices">外部オーディオデバイスを非表示</string>
+    <string name="other_hide_external_audio_devices_summary">Bluetooth、USB、HDMI、ドックなどの外部オーディオ端末を除外し、内蔵デバイスは表示したままにします</string>
+    <string name="import_qr">QR コード画像をインポート</string>
+    <string name="export_qr">QR コード画像をエクスポート</string>
+</resources>

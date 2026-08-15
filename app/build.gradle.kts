@@ -29,7 +29,6 @@ android {
         ndk {
             abiFilters += "arm64-v8a"
         }
-
     }
 
     buildTypes {
@@ -43,7 +42,6 @@ android {
                 )
             )
         }
-
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -62,7 +60,6 @@ android {
         }
     }
     lint {
-        // MMKV 2 only ships 64-bit Android binaries; this app intentionally targets arm64 devices.
         disable += "ChromeOsAbiSupport"
     }
 }
@@ -89,25 +86,19 @@ tasks.register("updateVersion") {
 }
 
 dependencies {
-
     val roomVersion = "2.8.4"
-
 
     compileOnly("io.github.libxposed:api:102.0.0")
     implementation("io.github.libxposed:service:102.0.0")
     implementation(project(":ktx-xposed"))
     implementation("com.tencent:mmkv:2.4.1")
-    // implementation("io.github.admin4j:http:0.4.0")
-
-    // Kotlin-serilization
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
-
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0")
+    implementation("com.google.zxing:core:3.5.4")
 
     implementation("androidx.room:room-runtime:$roomVersion")
     ksp("androidx.room:room-compiler:$roomVersion")
     implementation("androidx.room:room-ktx:$roomVersion")
-
 
     implementation("androidx.core:core-ktx:1.19.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.11.0")
@@ -162,7 +153,6 @@ val verifyReleaseXposedEntries = tasks.register("verifyReleaseXposedEntries") {
                 "R8 renamed or removed LSPosed entry point $entry"
             }
         }
-
 
         val privateEntryMethods = listOf(
             "attachLogContextWhenReady",
