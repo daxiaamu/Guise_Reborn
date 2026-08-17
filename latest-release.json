@@ -1,23 +1,23 @@
 {
-  "versionCode": 24,
-  "versionName": "2.0.1",
+  "versionCode": 25,
+  "versionName": "2.0.2",
   "prerelease": false,
-  "title": "Guise 2.0.1",
-  "notes": "- 优化机型 Hook。\n- 制造商留空时不 Hook `Build.MANUFACTURER`。",
-  "releaseUrl": "https://github.com/daxiaamu/Guise_Reborn/releases/tag/v2.0.1",
+  "title": "Guise 2.0.2",
+  "notes": "- 修复部分应用（如高德地图）语言伪装失效。",
+  "releaseUrl": "https://github.com/daxiaamu/Guise_Reborn/releases/tag/v2.0.2",
   "apkUrls": [
-    "https://gh-proxy.com/https://github.com/daxiaamu/Guise_Reborn/releases/download/v2.0.1/Guise-2.0.1.apk",
-    "https://ghfast.top/https://github.com/daxiaamu/Guise_Reborn/releases/download/v2.0.1/Guise-2.0.1.apk",
-    "https://ghproxy.net/https://github.com/daxiaamu/Guise_Reborn/releases/download/v2.0.1/Guise-2.0.1.apk",
-    "https://ghproxy.vip/https://github.com/daxiaamu/Guise_Reborn/releases/download/v2.0.1/Guise-2.0.1.apk?sha=d470f12a38a194843f04b1975fb1845be4be971a0970a06663078acc9c11cdcb",
-    "https://gh.jasonzeng.dev/https://github.com/daxiaamu/Guise_Reborn/releases/download/v2.0.1/Guise-2.0.1.apk",
-    "https://gh.3w.pm/https://github.com/daxiaamu/Guise_Reborn/releases/download/v2.0.1/Guise-2.0.1.apk",
-    "https://v6.gh-proxy.com/https://github.com/daxiaamu/Guise_Reborn/releases/download/v2.0.1/Guise-2.0.1.apk",
-    "https://v6.gh-proxy.org/https://github.com/daxiaamu/Guise_Reborn/releases/download/v2.0.1/Guise-2.0.1.apk",
-    "https://gh-proxy.org/https://github.com/daxiaamu/Guise_Reborn/releases/download/v2.0.1/Guise-2.0.1.apk",
-    "https://xget.xi-xu.me/gh/daxiaamu/Guise_Reborn/releases/download/v2.0.1/Guise-2.0.1.apk",
-    "https://github.com/daxiaamu/Guise_Reborn/releases/download/v2.0.1/Guise-2.0.1.apk"
+    "https://gh-proxy.com/https://github.com/daxiaamu/Guise_Reborn/releases/download/v2.0.2/Guise-2.0.2.apk",
+    "https://ghfast.top/https://github.com/daxiaamu/Guise_Reborn/releases/download/v2.0.2/Guise-2.0.2.apk",
+    "https://ghproxy.net/https://github.com/daxiaamu/Guise_Reborn/releases/download/v2.0.2/Guise-2.0.2.apk",
+    "https://ghproxy.vip/https://github.com/daxiaamu/Guise_Reborn/releases/download/v2.0.2/Guise-2.0.2.apk?sha=8c0be9fa18f5d9819a0040179e50da0c4fa32c5457a5f1b8f097d333ce3a6a6e",
+    "https://gh.jasonzeng.dev/https://github.com/daxiaamu/Guise_Reborn/releases/download/v2.0.2/Guise-2.0.2.apk",
+    "https://gh.3w.pm/https://github.com/daxiaamu/Guise_Reborn/releases/download/v2.0.2/Guise-2.0.2.apk",
+    "https://v6.gh-proxy.com/https://github.com/daxiaamu/Guise_Reborn/releases/download/v2.0.2/Guise-2.0.2.apk",
+    "https://v6.gh-proxy.org/https://github.com/daxiaamu/Guise_Reborn/releases/download/v2.0.2/Guise-2.0.2.apk",
+    "https://gh-proxy.org/https://github.com/daxiaamu/Guise_Reborn/releases/download/v2.0.2/Guise-2.0.2.apk",
+    "https://xget.xi-xu.me/gh/daxiaamu/Guise_Reborn/releases/download/v2.0.2/Guise-2.0.2.apk",
+    "https://github.com/daxiaamu/Guise_Reborn/releases/download/v2.0.2/Guise-2.0.2.apk"
   ],
-  "apkUrl": "https://github.com/daxiaamu/Guise_Reborn/releases/download/v2.0.1/Guise-2.0.1.apk",
-  "apkSha256": "d470f12a38a194843f04b1975fb1845be4be971a0970a06663078acc9c11cdcb"
+  "apkUrl": "https://github.com/daxiaamu/Guise_Reborn/releases/download/v2.0.2/Guise-2.0.2.apk",
+  "apkSha256": "8c0be9fa18f5d9819a0040179e50da0c4fa32c5457a5f1b8f097d333ce3a6a6e"
 }
