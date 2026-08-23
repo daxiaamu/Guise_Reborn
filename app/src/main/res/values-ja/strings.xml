@@ -29,12 +29,12 @@
     <string name="app_type_user">ユーザー</string>
     <string name="title_device_parameter">デバイスパラメータ</string>
     <string name="title_net_info">ネットワーク情報</string>
-    <string name="title_unique_id">一意の ID</string>
+    <string name="title_unique_id">一意のID</string>
     <string name="title_cell_location">基地局位置</string>
     <string name="title_location_info">位置情報</string>
     <string name="location_info_summary">以下の変更は、対象のアプリが読み取るデータにのみ影響し、システムの位置情報設定や他のアプリには影響しません</string>
     <string name="title_other">その他</string>
-    <string name="title_blank_pass">ブランクパス</string>
+    <string name="title_blank_pass">空白の通行証</string>
     <string name="device_brand">ブランド</string>
     <string name="device_manufacturer">メーカー</string>
     <string name="device_manufacturer_summary">空欄の場合は元のメーカーを変更しません。一括ランダムではブランドと同時に設定します。</string>
