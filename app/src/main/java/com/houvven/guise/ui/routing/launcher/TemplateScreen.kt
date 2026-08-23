@@ -39,6 +39,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -66,11 +67,15 @@ import com.houvven.guise.ui.routing.LocalNavController
 import com.houvven.guise.ui.routing.NavRoutingTypes
 import com.houvven.guise.ui.routing.navigateWithTemplate
 import com.houvven.guise.ui.routing.template.EnableTemplateDialog
+import com.houvven.guise.ui.utils.decodeTemplateQrImage
+import com.houvven.guise.ui.utils.encodeTemplateQrBitmap
+import com.houvven.guise.ui.utils.saveBitmapToDownloadDir
 import com.houvven.guise.ui.utils.saveFileToDownloadDir
 import com.houvven.guise.xposed.PackageConfig
 import com.houvven.guise.xposed.config.ModuleConfig
 import java.io.Reader
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 private object TemplateTypeFilter {
@@ -88,6 +93,7 @@ private val requestEnableTemplate = mutableStateOf<Template?>(null)
 private fun TemplateCard(template: Template, appliedAppCount: Int) {
     val context = LocalContext.current
     val resources = LocalResources.current
+    val scope = rememberCoroutineScope()
     val isExclusive = template.type == Template.Type.EXCLUSIVE
     val exclusiveIcon = remember(isExclusive, template.packageName) {
         if (!isExclusive) {
@@ -235,6 +241,35 @@ private fun TemplateCard(template: Template, appliedAppCount: Int) {
                     template,
                 )
             })
+            SimplifyDropdownMenuItem(text = stringResource(R.string.export_qr), onClick = {
+                expanded = false
+                scope.launch {
+                    val result = runCatching {
+                        val bitmap = withContext(Dispatchers.Default) {
+                            encodeTemplateQrBitmap(TemplateTransfer.encode(listOf(template)))
+                        }
+                        try {
+                            withContext(Dispatchers.IO) {
+                                saveBitmapToDownloadDir(
+                                    "Guise-Template-${template.id}.png",
+                                    bitmap,
+                                ).getOrThrow()
+                            }
+                        } finally {
+                            bitmap.recycle()
+                        }
+                    }
+                    result.onSuccess {
+                        GlobalSnackbarHost.showByDismissPrevious(
+                            resources.getString(R.string.export_success, it)
+                        )
+                    }.onFailure {
+                        GlobalSnackbarHost.showOnErrorByDismissPrevious(
+                            resources.getString(R.string.export_failed, it.message.orEmpty())
+                        )
+                    }
+                }
+            })
             SimplifyDropdownMenuItem(text = stringResource(R.string.delete), onClick = {
                 expanded = false
                 LauncherState.deleteTemplate(template)
@@ -249,6 +284,7 @@ internal fun TemplateScreen() {
     val context = LocalContext.current
     val resources = LocalResources.current
     val navController = LocalNavController.current
+    val scope = rememberCoroutineScope()
     val templates = LauncherState.templates.value
     val configurationRevision = PackageConfig.configurationRevision.intValue
     val templateSignatures = remember(templates) {
@@ -295,19 +331,52 @@ internal fun TemplateScreen() {
                     ) { result ->
                         topBarMenuExpanded = false
                         if (result == null) return@rememberLauncherForActivityResult
-                        runCatching {
-                            context.contentResolver.openInputStream(result)?.bufferedReader()?.use {
-                                TemplateTransfer.decode(it.readLimitedText(MAX_TEMPLATE_IMPORT_CHARS))
-                            } ?: error("Unable to open selected file")
-                        }.onSuccess { templates ->
-                            LauncherState.addTemplates(templates)
-                            GlobalSnackbarHost.showByDismissPrevious(
-                                resources.getString(R.string.import_success)
-                            )
-                        }.onFailure {
-                            GlobalSnackbarHost.showOnErrorByDismissPrevious(
-                                resources.getString(R.string.import_failed, it.message.orEmpty())
-                            )
+                        scope.launch {
+                            val decoded = withContext(Dispatchers.IO) {
+                                runCatching {
+                                    context.contentResolver.openInputStream(result)
+                                        ?.bufferedReader()
+                                        ?.use {
+                                            TemplateTransfer.decode(
+                                                it.readLimitedText(MAX_TEMPLATE_IMPORT_CHARS)
+                                            )
+                                        }
+                                        ?: error("Unable to open selected file")
+                                }
+                            }
+                            decoded.onSuccess { imported ->
+                                LauncherState.addTemplates(imported)
+                                GlobalSnackbarHost.showByDismissPrevious(
+                                    resources.getString(R.string.import_success)
+                                )
+                            }.onFailure {
+                                GlobalSnackbarHost.showOnErrorByDismissPrevious(
+                                    resources.getString(R.string.import_failed, it.message.orEmpty())
+                                )
+                            }
+                        }
+                    }
+                    val qrLauncher = rememberLauncherForActivityResult(
+                        contract = ActivityResultContracts.GetContent(),
+                    ) { result ->
+                        topBarMenuExpanded = false
+                        if (result == null) return@rememberLauncherForActivityResult
+                        scope.launch {
+                            val decoded = withContext(Dispatchers.IO) {
+                                runCatching {
+                                    TemplateTransfer.decode(decodeTemplateQrImage(context, result))
+                                }
+                            }
+                            decoded.onSuccess { imported ->
+                                LauncherState.addTemplates(imported)
+                                GlobalSnackbarHost.showByDismissPrevious(
+                                    resources.getString(R.string.import_success)
+                                )
+                            }.onFailure {
+                                GlobalSnackbarHost.showOnErrorByDismissPrevious(
+                                    resources.getString(R.string.import_failed, it.message.orEmpty())
+                                )
+                            }
                         }
                     }
 
@@ -316,19 +385,34 @@ internal fun TemplateScreen() {
                         onClick = { resultLauncher.launch("application/json") },
                     )
                     SimplifyDropdownMenuItem(
+                        text = stringResource(R.string.import_qr),
+                        onClick = { qrLauncher.launch("image/*") },
+                    )
+                    SimplifyDropdownMenuItem(
                         text = stringResource(R.string.export_data),
                         onClick = {
-                            saveFileToDownloadDir(
-                                "Guise-Template-${System.currentTimeMillis()}.json",
-                                TemplateTransfer.encode(LauncherState.templates.value),
-                            ).onSuccess {
-                                GlobalSnackbarHost.showByDismissPrevious(
-                                    resources.getString(R.string.export_success, it)
-                                )
-                            }.onFailure {
-                                GlobalSnackbarHost.showOnErrorByDismissPrevious(
-                                    resources.getString(R.string.export_failed, it.message.orEmpty())
-                                )
+                            topBarMenuExpanded = false
+                            scope.launch {
+                                val result = runCatching {
+                                    val encoded = withContext(Dispatchers.Default) {
+                                        TemplateTransfer.encode(LauncherState.templates.value)
+                                    }
+                                    withContext(Dispatchers.IO) {
+                                        saveFileToDownloadDir(
+                                            "Guise-Template-${System.currentTimeMillis()}.json",
+                                            encoded,
+                                        ).getOrThrow()
+                                    }
+                                }
+                                result.onSuccess {
+                                    GlobalSnackbarHost.showByDismissPrevious(
+                                        resources.getString(R.string.export_success, it)
+                                    )
+                                }.onFailure {
+                                    GlobalSnackbarHost.showOnErrorByDismissPrevious(
+                                        resources.getString(R.string.export_failed, it.message.orEmpty())
+                                    )
+                                }
                             }
                         },
                     )

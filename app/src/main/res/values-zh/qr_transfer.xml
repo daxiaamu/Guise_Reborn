@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="import_qr">导入二维码图片</string>
+    <string name="export_qr">导出二维码图片</string>
+</resources>

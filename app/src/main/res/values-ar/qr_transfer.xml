@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="import_qr">استيراد صورة رمز QR</string>
+    <string name="export_qr">تصدير صورة رمز QR</string>
+</resources>

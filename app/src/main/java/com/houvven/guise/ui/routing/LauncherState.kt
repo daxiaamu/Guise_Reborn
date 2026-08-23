@@ -8,6 +8,8 @@ import com.houvven.guise.db.defaults.BundledTemplateManager
 import com.houvven.guise.ContextAmbient
 import com.houvven.guise.module.apps.AppInfo
 import com.houvven.guise.module.apps.AppInfoProvider
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @SuppressLint("MutableCollectionMutableState")
 object LauncherState {
@@ -49,9 +51,12 @@ object LauncherState {
         refreshTemplates()
     }
 
-    fun addTemplates(templates: List<Template>) {
-        templateDao.insertMany(templates)
-        refreshTemplates()
+    suspend fun addTemplates(imported: List<Template>) {
+        val refreshed = withContext(Dispatchers.IO) {
+            templateDao.insertMany(imported)
+            templateDao.getAll()
+        }
+        templates.value = refreshed
     }
 
     fun deleteTemplate(template: Template) {
