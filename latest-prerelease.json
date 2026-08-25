@@ -3,7 +3,7 @@
   "versionName": "2.1.1-beta.1",
   "prerelease": true,
   "title": "Guise 2.1.1-beta.1",
-  "notes": "- 修复部分应用通过 Wi-Fi 扫描列表读取网络信息时，SSID/BSSID 伪装不一致的问题。\n- 改善将网络类型设置为 Wi-Fi 时的 API 状态一致性。",
+  "notes": "增强 Wi-Fi 伪装效果。",
   "releaseUrl": "https://github.com/daxiaamu/Guise_Reborn/releases/tag/v2.1.1-beta.1",
   "apkUrls": [
     "https://gh-proxy.com/https://github.com/daxiaamu/Guise_Reborn/releases/download/v2.1.1-beta.1/Guise-2.1.1-beta.1.apk",
