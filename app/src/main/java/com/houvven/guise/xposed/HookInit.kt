@@ -28,6 +28,7 @@ import com.houvven.ktx_xposed.utils.runXposedCatching
 import io.github.libxposed.api.XposedModule
 import io.github.libxposed.api.XposedModuleInterface.HotReloadingParam
 import io.github.libxposed.api.XposedModuleInterface.ModuleLoadedParam
+import io.github.libxposed.api.XposedModuleInterface.PackageLoadedParam
 import io.github.libxposed.api.XposedModuleInterface.PackageReadyParam
 import kotlin.system.exitProcess
 
@@ -35,6 +36,7 @@ import kotlin.system.exitProcess
 class HookInit : XposedModule() {
 
     private var processName: String = ""
+    private val installedFeatures = mutableSetOf<HookFeature>()
 
     override fun onModuleLoaded(param: ModuleLoadedParam) {
         processName = param.processName
@@ -45,32 +47,51 @@ class HookInit : XposedModule() {
         return super.onHotReloading(param)
     }
 
+    override fun onPackageLoaded(param: PackageLoadedParam) {
+        if (!param.isFirstPackage || param.packageName == BuildConfig.APPLICATION_ID) return
+
+        preparePackage(param.packageName, param.defaultClassLoader)
+        if (!PackageConfig.current.isEnable) return
+
+        XposedLogger.initialize(::currentApplication)
+        XposedLogger.d("Package loaded")
+        installFeatures(PackageConfig.current.activeHookFeatures() - LATE_FEATURES)
+    }
+
     override fun onPackageReady(param: PackageReadyParam) {
         if (!param.isFirstPackage || param.packageName == BuildConfig.APPLICATION_ID) return
 
-        ModernXposedRuntime.initialize(
-            this,
-            LoadPackageContext(param.packageName, processName, param.classLoader),
-        )
-        ModernXposedPreferences.current = getRemotePreferences(PackageConfig.PREF_FILE_NAME)
-        PackageConfig.doRefresh(param.packageName)
+        preparePackage(param.packageName, param.classLoader)
         if (!PackageConfig.current.isEnable) return
 
         XposedLogger.initialize(::currentApplication)
         XposedLogger.d("Package ready")
+        installFeatures(PackageConfig.current.activeHookFeatures())
+        XposedLogger.finishStartup()
+        if (XposedLogger.needsDeliveryContext()) attachLogContextWhenReady()
+    }
 
-        val hooks = PackageConfig.current.activeHookFeatures().map(::createHook)
-        hooks.forEach { (category, hook) ->
+    private fun preparePackage(packageName: String, classLoader: ClassLoader) {
+        ModernXposedRuntime.initialize(
+            this,
+            LoadPackageContext(packageName, processName, classLoader),
+        )
+        ModernXposedPreferences.current = getRemotePreferences(PackageConfig.PREF_FILE_NAME)
+        PackageConfig.doRefresh(packageName)
+    }
+
+    private fun installFeatures(features: Iterable<HookFeature>) {
+        features.filterNot(installedFeatures::contains).forEach { feature ->
+            val (category, hook) = createHook(feature)
             val setupCompleted = runXposedCatching(category) {
                 XposedLogger.withCategory(category) { hook.onHook() }
                 true
             } == true
             if (setupCompleted) {
+                installedFeatures += feature
                 XposedLogger.d("Hook setup completed", category)
             }
         }
-        XposedLogger.finishStartup()
-        if (XposedLogger.needsDeliveryContext()) attachLogContextWhenReady()
     }
 
     private fun createHook(feature: HookFeature): Pair<String, LoadPackageHookAdapter> =
@@ -121,5 +142,6 @@ class HookInit : XposedModule() {
         private const val PROCESS_EXIT_DELAY_MS = 150L
         private const val LOG_CONTEXT_RETRY_DELAY_MS = 50L
         private const val LOG_CONTEXT_MAX_ATTEMPTS = 20
+        private val LATE_FEATURES = setOf(HookFeature.APP_VERSION)
     }
 }
