@@ -26,7 +26,10 @@ internal class WifiHook : LoadPackageHandler {
         }
 
         if (config.networkType == HooksValue.NET_WIFI) {
-            WifiManager::class.java.setMethodResult("getWifiState", WifiManager.WIFI_STATE_ENABLED)
+            WifiManager::class.java.run {
+                setMethodResult("getWifiState", WifiManager.WIFI_STATE_ENABLED)
+                setMethodResult("isWifiEnabled", true)
+            }
         }
     }
 
