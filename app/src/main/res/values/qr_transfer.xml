@@ -2,4 +2,15 @@
 <resources>
     <string name="import_qr">Import QR image</string>
     <string name="export_qr">Export QR image</string>
+    <string name="import_json_file">Import JSON file</string>
+    <string name="export_json_file">Export JSON file</string>
+    <string name="scan_qr_code">Scan QR code</string>
+    <string name="import_from_url">Import from URL</string>
+    <string name="template_url">Template URL</string>
+    <string name="show_qr_code">Export QR code</string>
+    <string name="save_qr_image">Save QR image</string>
+    <string name="template_qr_code">Template QR code</string>
+    <string name="choose_qr_image">Choose QR image</string>
+    <string name="camera_permission_required">Camera permission is required to scan QR codes</string>
+    <string name="save">Save</string>
 </resources>

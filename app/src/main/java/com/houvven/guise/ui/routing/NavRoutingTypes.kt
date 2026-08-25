@@ -5,4 +5,5 @@ enum class NavRoutingTypes {
     ADD_TEMPLATE,
     EDIT_TEMPLATE,
     ENABLE_TEMPLATE,
+    SCAN_TEMPLATE_QR,
 }

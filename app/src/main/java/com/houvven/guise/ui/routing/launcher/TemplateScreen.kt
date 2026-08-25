@@ -67,13 +67,10 @@ import com.houvven.guise.ui.routing.LocalNavController
 import com.houvven.guise.ui.routing.NavRoutingTypes
 import com.houvven.guise.ui.routing.navigateWithTemplate
 import com.houvven.guise.ui.routing.template.EnableTemplateDialog
-import com.houvven.guise.ui.utils.decodeTemplateQrImage
 import com.houvven.guise.ui.utils.encodeTemplateQrBitmap
 import com.houvven.guise.ui.utils.saveBitmapToDownloadDir
-import com.houvven.guise.ui.utils.saveFileToDownloadDir
 import com.houvven.guise.xposed.PackageConfig
 import com.houvven.guise.xposed.config.ModuleConfig
-import java.io.Reader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -316,104 +313,38 @@ internal fun TemplateScreen() {
 
     val topBar = @Composable {
         var topBarMenuExpanded by remember { mutableStateOf(false) }
+        var transferDialog by remember { mutableStateOf<TemplateTransferMode?>(null) }
         TopAppBar(
             title = { Text(stringResource(R.string.action_template)) },
             actions = {
                 IconButton(onClick = { topBarMenuExpanded = true }) {
                     SimplifyIcon(Icons.Default.MoreVert)
                 }
+                transferDialog?.let { mode ->
+                    TemplateTransferDialog(
+                        mode = mode,
+                        onDismiss = { transferDialog = null },
+                        onScanQr = {
+                            navController.navigate(NavRoutingTypes.SCAN_TEMPLATE_QR.name)
+                        },
+                    )
+                }
                 DropdownMenu(
                     expanded = topBarMenuExpanded,
                     onDismissRequest = { topBarMenuExpanded = false },
                 ) {
-                    val resultLauncher = rememberLauncherForActivityResult(
-                        contract = ActivityResultContracts.GetContent(),
-                    ) { result ->
-                        topBarMenuExpanded = false
-                        if (result == null) return@rememberLauncherForActivityResult
-                        scope.launch {
-                            val decoded = withContext(Dispatchers.IO) {
-                                runCatching {
-                                    context.contentResolver.openInputStream(result)
-                                        ?.bufferedReader()
-                                        ?.use {
-                                            TemplateTransfer.decode(
-                                                it.readLimitedText(MAX_TEMPLATE_IMPORT_CHARS)
-                                            )
-                                        }
-                                        ?: error("Unable to open selected file")
-                                }
-                            }
-                            decoded.onSuccess { imported ->
-                                LauncherState.addTemplates(imported)
-                                GlobalSnackbarHost.showByDismissPrevious(
-                                    resources.getString(R.string.import_success)
-                                )
-                            }.onFailure {
-                                GlobalSnackbarHost.showOnErrorByDismissPrevious(
-                                    resources.getString(R.string.import_failed, it.message.orEmpty())
-                                )
-                            }
-                        }
-                    }
-                    val qrLauncher = rememberLauncherForActivityResult(
-                        contract = ActivityResultContracts.GetContent(),
-                    ) { result ->
-                        topBarMenuExpanded = false
-                        if (result == null) return@rememberLauncherForActivityResult
-                        scope.launch {
-                            val decoded = withContext(Dispatchers.IO) {
-                                runCatching {
-                                    TemplateTransfer.decode(decodeTemplateQrImage(context, result))
-                                }
-                            }
-                            decoded.onSuccess { imported ->
-                                LauncherState.addTemplates(imported)
-                                GlobalSnackbarHost.showByDismissPrevious(
-                                    resources.getString(R.string.import_success)
-                                )
-                            }.onFailure {
-                                GlobalSnackbarHost.showOnErrorByDismissPrevious(
-                                    resources.getString(R.string.import_failed, it.message.orEmpty())
-                                )
-                            }
-                        }
-                    }
-
                     SimplifyDropdownMenuItem(
                         text = stringResource(R.string.import_data),
-                        onClick = { resultLauncher.launch("application/json") },
-                    )
-                    SimplifyDropdownMenuItem(
-                        text = stringResource(R.string.import_qr),
-                        onClick = { qrLauncher.launch("image/*") },
+                        onClick = {
+                            topBarMenuExpanded = false
+                            transferDialog = TemplateTransferMode.IMPORT
+                        },
                     )
                     SimplifyDropdownMenuItem(
                         text = stringResource(R.string.export_data),
                         onClick = {
                             topBarMenuExpanded = false
-                            scope.launch {
-                                val result = runCatching {
-                                    val encoded = withContext(Dispatchers.Default) {
-                                        TemplateTransfer.encode(LauncherState.templates.value)
-                                    }
-                                    withContext(Dispatchers.IO) {
-                                        saveFileToDownloadDir(
-                                            "Guise-Template-${System.currentTimeMillis()}.json",
-                                            encoded,
-                                        ).getOrThrow()
-                                    }
-                                }
-                                result.onSuccess {
-                                    GlobalSnackbarHost.showByDismissPrevious(
-                                        resources.getString(R.string.export_success, it)
-                                    )
-                                }.onFailure {
-                                    GlobalSnackbarHost.showOnErrorByDismissPrevious(
-                                        resources.getString(R.string.export_failed, it.message.orEmpty())
-                                    )
-                                }
-                            }
+                            transferDialog = TemplateTransferMode.EXPORT
                         },
                     )
                 }
@@ -500,18 +431,3 @@ internal fun TemplateScreen() {
         }
     }
 }
-
-private fun Reader.readLimitedText(maxChars: Int): String {
-    val result = StringBuilder(minOf(DEFAULT_BUFFER_SIZE, maxChars))
-    val buffer = CharArray(DEFAULT_BUFFER_SIZE)
-    var total = 0
-    while (true) {
-        val count = read(buffer)
-        if (count < 0) return result.toString()
-        total += count
-        require(total <= maxChars) { "Template file is too large" }
-        result.append(buffer, 0, count)
-    }
-}
-
-private const val MAX_TEMPLATE_IMPORT_CHARS = 2_000_000

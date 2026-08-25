@@ -2,4 +2,15 @@
 <resources>
     <string name="import_qr">استيراد صورة رمز QR</string>
     <string name="export_qr">تصدير صورة رمز QR</string>
+    <string name="import_json_file">استيراد ملف JSON</string>
+    <string name="export_json_file">تصدير ملف JSON</string>
+    <string name="scan_qr_code">مسح رمز QR</string>
+    <string name="import_from_url">استيراد من رابط URL</string>
+    <string name="template_url">رابط القالب</string>
+    <string name="show_qr_code">تصدير رمز QR</string>
+    <string name="save_qr_image">حفظ صورة رمز QR</string>
+    <string name="template_qr_code">رمز QR للقالب</string>
+    <string name="choose_qr_image">اختيار صورة رمز QR</string>
+    <string name="camera_permission_required">يلزم إذن الكاميرا لمسح رموز QR</string>
+    <string name="save">حفظ</string>
 </resources>

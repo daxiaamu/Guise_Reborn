@@ -24,6 +24,7 @@ import com.houvven.guise.db.Template
 import com.houvven.guise.ui.routing.editor.AddTemplateScreen
 import com.houvven.guise.ui.routing.editor.EditTemplateScreen
 import com.houvven.guise.ui.routing.launcher.LauncherRoute
+import com.houvven.guise.ui.routing.launcher.TemplateQrScannerScreen
 import com.houvven.guise.ui.routing.template.EnableTemplateScreen
 import com.houvven.guise.ui.theme.predictiveBack
 
@@ -151,6 +152,8 @@ fun NavigationRoute() {
         composable(NavRoutingTypes.LAUNCHER.name) { LauncherRoute() }
 
         composable(NavRoutingTypes.ADD_TEMPLATE.name) { AddTemplateScreen() }
+
+        composable(NavRoutingTypes.SCAN_TEMPLATE_QR.name) { TemplateQrScannerScreen() }
 
         composable(
             route = "${NavRoutingTypes.EDIT_TEMPLATE.name}/{template}",

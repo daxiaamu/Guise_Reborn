@@ -2,4 +2,15 @@
 <resources>
     <string name="import_qr">QR コード画像をインポート</string>
     <string name="export_qr">QR コード画像をエクスポート</string>
+    <string name="import_json_file">JSON ファイルをインポート</string>
+    <string name="export_json_file">JSON ファイルをエクスポート</string>
+    <string name="scan_qr_code">QR コードをスキャン</string>
+    <string name="import_from_url">URL からインポート</string>
+    <string name="template_url">テンプレート URL</string>
+    <string name="show_qr_code">QR コードをエクスポート</string>
+    <string name="save_qr_image">QR コード画像を保存</string>
+    <string name="template_qr_code">テンプレート QR コード</string>
+    <string name="choose_qr_image">QR コード画像を選択</string>
+    <string name="camera_permission_required">QR コードのスキャンにはカメラ権限が必要です</string>
+    <string name="save">保存</string>
 </resources>

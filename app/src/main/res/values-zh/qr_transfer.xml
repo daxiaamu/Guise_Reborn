@@ -2,4 +2,15 @@
 <resources>
     <string name="import_qr">导入二维码图片</string>
     <string name="export_qr">导出二维码图片</string>
+    <string name="import_json_file">导入 JSON 文件</string>
+    <string name="export_json_file">导出 JSON 文件</string>
+    <string name="scan_qr_code">扫描二维码</string>
+    <string name="import_from_url">从 URL 导入</string>
+    <string name="template_url">模板 URL</string>
+    <string name="show_qr_code">导出二维码</string>
+    <string name="save_qr_image">保存二维码图片</string>
+    <string name="template_qr_code">模板二维码</string>
+    <string name="choose_qr_image">选择二维码图片</string>
+    <string name="camera_permission_required">扫描二维码需要相机权限</string>
+    <string name="save">保存</string>
 </resources>
