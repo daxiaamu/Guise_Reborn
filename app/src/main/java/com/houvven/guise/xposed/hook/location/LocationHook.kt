@@ -6,6 +6,9 @@ import android.location.Location
 import android.location.LocationManager
 import android.os.SystemClock
 import com.houvven.guise.xposed.LoadPackageHandler
+import com.houvven.ktx_xposed.hook.beforeHookAllMethods
+import com.houvven.ktx_xposed.hook.beforeHookedMethod
+import com.houvven.ktx_xposed.hook.findClassIfExists
 import com.houvven.ktx_xposed.hook.setMethodResult
 
 
@@ -24,6 +27,8 @@ class LocationHook : LoadPackageHandler, LocationHookBase() {
                 if (longitude != UNSET_COORDINATE) longitude += randomOffset()
             }
             fakeCoordinates()
+            hookFrameworkLocationCallbacks()
+            hookKnownSdkLocations()
             if (hasCompleteCoordinates()) setLastLocation()
         }
         if (config.makeWifiLocationFail) makeWifiLocationFail()
@@ -34,6 +39,41 @@ class LocationHook : LoadPackageHandler, LocationHookBase() {
         Location::class.java.run {
             if (longitude != UNSET_COORDINATE) setMethodResult("getLongitude", longitude)
             if (latitude != UNSET_COORDINATE) setMethodResult("getLatitude", latitude)
+        }
+    }
+
+    private fun hookFrameworkLocationCallbacks() {
+        FRAMEWORK_LOCATION_TRANSPORTS
+            .mapNotNull(::findClassIfExists)
+            .forEach { transport ->
+                transport.beforeHookAllMethods("onLocationChanged") { param ->
+                    param.args.forEach(::rewriteLocations)
+                }
+            }
+    }
+
+    private fun hookKnownSdkLocations() {
+        findClassIfExists(AMAP_LOCATION_CLASS)?.run {
+            if (latitude != UNSET_COORDINATE) {
+                setMethodResult("getLatitude", latitude)
+                beforeHookedMethod("setLatitude", Double::class.javaPrimitiveType!!) { param ->
+                    param.args[0] = latitude
+                }
+            }
+            if (longitude != UNSET_COORDINATE) {
+                setMethodResult("getLongitude", longitude)
+                beforeHookedMethod("setLongitude", Double::class.javaPrimitiveType!!) { param ->
+                    param.args[0] = longitude
+                }
+            }
+        }
+    }
+
+    private fun rewriteLocations(value: Any?) {
+        when (value) {
+            is Location -> modifyLocation(value)
+            is Iterable<*> -> value.forEach(::rewriteLocations)
+            is Array<*> -> value.forEach(::rewriteLocations)
         }
     }
 
@@ -68,5 +108,10 @@ class LocationHook : LoadPackageHandler, LocationHookBase() {
 
     private companion object {
         const val UNSET_COORDINATE = -1.0
+        const val AMAP_LOCATION_CLASS = "com.amap.api.location.AMapLocation"
+        val FRAMEWORK_LOCATION_TRANSPORTS = listOf(
+            "android.location.LocationManager\$LocationListenerTransport",
+            "android.location.LocationManager\$ListenerTransport",
+        )
     }
 }
