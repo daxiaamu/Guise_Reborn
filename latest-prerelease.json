@@ -1,23 +1,23 @@
 {
-  "versionCode": 28,
-  "versionName": "2.1.1-beta.1",
+  "versionCode": 29,
+  "versionName": "2.1.1-beta.2",
   "prerelease": true,
-  "title": "Guise 2.1.1-beta.1",
-  "notes": "增强 Wi-Fi 伪装效果。",
-  "releaseUrl": "https://github.com/daxiaamu/Guise_Reborn/releases/tag/v2.1.1-beta.1",
+  "title": "Guise 2.1.1-beta.2",
+  "notes": "增强定位伪装效果。",
+  "releaseUrl": "https://github.com/daxiaamu/Guise_Reborn/releases/tag/v2.1.1-beta.2",
   "apkUrls": [
-    "https://gh-proxy.com/https://github.com/daxiaamu/Guise_Reborn/releases/download/v2.1.1-beta.1/Guise-2.1.1-beta.1.apk",
-    "https://ghfast.top/https://github.com/daxiaamu/Guise_Reborn/releases/download/v2.1.1-beta.1/Guise-2.1.1-beta.1.apk",
-    "https://ghproxy.net/https://github.com/daxiaamu/Guise_Reborn/releases/download/v2.1.1-beta.1/Guise-2.1.1-beta.1.apk",
-    "https://ghproxy.vip/https://github.com/daxiaamu/Guise_Reborn/releases/download/v2.1.1-beta.1/Guise-2.1.1-beta.1.apk?sha=6824158936a8fabd60ca95f6c92b2daf9321da6062ba650dfa2f597254da3534",
-    "https://gh.jasonzeng.dev/https://github.com/daxiaamu/Guise_Reborn/releases/download/v2.1.1-beta.1/Guise-2.1.1-beta.1.apk",
-    "https://gh.3w.pm/https://github.com/daxiaamu/Guise_Reborn/releases/download/v2.1.1-beta.1/Guise-2.1.1-beta.1.apk",
-    "https://v6.gh-proxy.com/https://github.com/daxiaamu/Guise_Reborn/releases/download/v2.1.1-beta.1/Guise-2.1.1-beta.1.apk",
-    "https://v6.gh-proxy.org/https://github.com/daxiaamu/Guise_Reborn/releases/download/v2.1.1-beta.1/Guise-2.1.1-beta.1.apk",
-    "https://gh-proxy.org/https://github.com/daxiaamu/Guise_Reborn/releases/download/v2.1.1-beta.1/Guise-2.1.1-beta.1.apk",
-    "https://xget.xi-xu.me/gh/daxiaamu/Guise_Reborn/releases/download/v2.1.1-beta.1/Guise-2.1.1-beta.1.apk",
-    "https://github.com/daxiaamu/Guise_Reborn/releases/download/v2.1.1-beta.1/Guise-2.1.1-beta.1.apk"
+    "https://gh-proxy.com/https://github.com/daxiaamu/Guise_Reborn/releases/download/v2.1.1-beta.2/Guise-2.1.1-beta.2.apk",
+    "https://ghfast.top/https://github.com/daxiaamu/Guise_Reborn/releases/download/v2.1.1-beta.2/Guise-2.1.1-beta.2.apk",
+    "https://ghproxy.net/https://github.com/daxiaamu/Guise_Reborn/releases/download/v2.1.1-beta.2/Guise-2.1.1-beta.2.apk",
+    "https://ghproxy.vip/https://github.com/daxiaamu/Guise_Reborn/releases/download/v2.1.1-beta.2/Guise-2.1.1-beta.2.apk?sha=e92eca5df6866130000bac3778fff3645f233d02be73c08c5cc644a9df86fae2",
+    "https://gh.jasonzeng.dev/https://github.com/daxiaamu/Guise_Reborn/releases/download/v2.1.1-beta.2/Guise-2.1.1-beta.2.apk",
+    "https://gh.3w.pm/https://github.com/daxiaamu/Guise_Reborn/releases/download/v2.1.1-beta.2/Guise-2.1.1-beta.2.apk",
+    "https://v6.gh-proxy.com/https://github.com/daxiaamu/Guise_Reborn/releases/download/v2.1.1-beta.2/Guise-2.1.1-beta.2.apk",
+    "https://v6.gh-proxy.org/https://github.com/daxiaamu/Guise_Reborn/releases/download/v2.1.1-beta.2/Guise-2.1.1-beta.2.apk",
+    "https://gh-proxy.org/https://github.com/daxiaamu/Guise_Reborn/releases/download/v2.1.1-beta.2/Guise-2.1.1-beta.2.apk",
+    "https://xget.xi-xu.me/gh/daxiaamu/Guise_Reborn/releases/download/v2.1.1-beta.2/Guise-2.1.1-beta.2.apk",
+    "https://github.com/daxiaamu/Guise_Reborn/releases/download/v2.1.1-beta.2/Guise-2.1.1-beta.2.apk"
   ],
-  "apkUrl": "https://github.com/daxiaamu/Guise_Reborn/releases/download/v2.1.1-beta.1/Guise-2.1.1-beta.1.apk",
-  "apkSha256": "6824158936a8fabd60ca95f6c92b2daf9321da6062ba650dfa2f597254da3534"
+  "apkUrl": "https://github.com/daxiaamu/Guise_Reborn/releases/download/v2.1.1-beta.2/Guise-2.1.1-beta.2.apk",
+  "apkSha256": "e92eca5df6866130000bac3778fff3645f233d02be73c08c5cc644a9df86fae2"
 }
