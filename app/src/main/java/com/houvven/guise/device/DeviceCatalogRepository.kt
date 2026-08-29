@@ -15,7 +15,11 @@ data class DeviceModel(
     val alias: String? = null,
     val type: String,
     val versionName: String? = null,
-)
+) {
+    fun resolvedDevice(): String = alias?.trim().orEmpty().ifBlank {
+        device.trim().ifBlank { code?.trim().orEmpty() }
+    }
+}
 
 @Serializable
 data class DeviceBrand(

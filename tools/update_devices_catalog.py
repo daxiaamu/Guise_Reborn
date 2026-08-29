@@ -49,14 +49,19 @@ def main() -> None:
         if key not in identities:
             unknown_brands.add(key)
             continue
+        code = optional(row["code"])
+        alias = optional(row["code_alias"]) or code
         # Match the former SQLite query: one entry for each brand/model pair.
         models_by_brand[key].setdefault(model, {
             "model": model,
             "name": name,
-            "device": optional(row["code_alias"]) or optional(row["code"]) or "",
-            "code": optional(row["code"]),
+            # Keep the legacy code/device fields while storing the preferred
+            # Build.DEVICE codename (or code fallback) in alias.
+            "device": code or "",
+            "code": code,
             "type": dtype,
             "versionName": optional(row["ver_name"][1:] if row["ver_name"].startswith("#") else row["ver_name"]),
+            "alias": alias,
         })
 
     if unknown_brands:

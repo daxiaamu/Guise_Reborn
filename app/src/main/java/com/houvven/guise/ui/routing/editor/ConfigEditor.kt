@@ -151,7 +151,7 @@ private fun ConfigEditorItems(state: ModuleConfigState, launch: () -> Unit) {
                 val name = device.versionName?.let { "${device.name} ($it)" } ?: device.name
                 object : PresetAdapter {
                     override val label: String = "$name · ${device.model}"
-                    override val value: String = "${device.model}:${device.device}"
+                    override val value: String = "${device.model}:${device.resolvedDevice()}"
                 }
             },
         showOperateIcon = deviceCatalog != null && selectedDatabaseBrandKey != null,

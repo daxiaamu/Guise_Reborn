@@ -24,7 +24,7 @@ suspend fun oneClickRandom(state: ModuleConfigState, context: Context) {
             brand = brand.buildBrand,
             manufacturer = brand.manufacturer,
             model = device.model,
-            device = device.device,
+            device = device.resolvedDevice(),
             android = android.value,
             carrier = carrier,
         )

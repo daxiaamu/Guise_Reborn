@@ -19,6 +19,7 @@ class DeviceCatalogTest {
     @Test
     fun catalogHasExpectedCompleteShape() {
         assertEquals(1, catalog.schemaVersion)
+        assertEquals("e950666a1e7a485f9853b7877791080c452ad72f", catalog.sourceRevision)
         assertEquals(26, catalog.brands.size)
         assertEquals(8_533, catalog.brands.sumOf { it.models.size })
         assertEquals(catalog.brands.size, catalog.brands.map { it.key }.distinct().size)
@@ -54,5 +55,31 @@ class DeviceCatalogTest {
         val findX9Ultra = requireNotNull(oppo.models.firstOrNull { it.model == "PMA110" })
         assertEquals("", findX9Ultra.device)
         assertEquals("lighthouse", findX9Ultra.alias)
+    }
+
+    @Test
+    fun buildDevicePrefersCodenameAliasesAndFallsBackSafely() {
+        val xiaomi = requireNotNull(catalog.brandByKey("xiaomi"))
+        val xiaomi14 = requireNotNull(xiaomi.models.firstOrNull { it.model == "23127PN0CC" })
+        assertEquals("N3", xiaomi14.device)
+        assertEquals("houji", xiaomi14.alias)
+        assertEquals("houji", xiaomi14.resolvedDevice())
+
+        val onePlus = requireNotNull(catalog.brandByKey("oneplus"))
+        val onePlus12 = requireNotNull(onePlus.models.firstOrNull { it.model == "PJD110" })
+        assertEquals("", onePlus12.device)
+        assertEquals("waffle", onePlus12.alias)
+        assertEquals("waffle", onePlus12.resolvedDevice())
+
+        assertEquals(
+            "legacy-device",
+            DeviceModel(
+                model = "model",
+                name = "name",
+                device = "legacy-device",
+                code = "code",
+                type = "mob",
+            ).resolvedDevice(),
+        )
     }
 }
