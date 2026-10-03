@@ -434,9 +434,10 @@ class LocationHook : LoadPackageHandler, LocationHookBase() {
                 for (index in 0 until svCount) {
                     // Only the 12-arg overload exists on current SDKs; the has* flags
                     // (carrier frequency, baseband C/N0) stay false like the original.
+                    // AOSP signature: addSatellite(constellationType, svid, ...) — do not swap.
                     addSatellite(
-                        satelliteIds[index],
                         GnssStatus.CONSTELLATION_GPS,
+                        satelliteIds[index],
                         cn0s[index],
                         elevations[index],
                         azimuths[index],
