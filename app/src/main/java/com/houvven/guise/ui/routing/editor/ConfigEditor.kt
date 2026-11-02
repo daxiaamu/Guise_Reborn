@@ -142,6 +142,10 @@ private fun ConfigEditorItems(state: ModuleConfigState, launch: () -> Unit) {
         stringResource(R.string.device_manufacturer),
         supportingText = stringResource(R.string.device_manufacturer_summary),
     )
+    // 型号的骰子只在「品牌选自数据库」时出现：没有品牌就不知道该在哪个型号池里抽
+    val modelRandomGenerator: (() -> String)? = if (selectedDatabaseBrandKey == null) null else ({
+        randomDevicePreset(state, deviceCatalog?.brandByKey(selectedDatabaseBrandKey.orEmpty()))
+    })
     PresetInputBox(
         state = state.model,
         label = stringResource(R.string.device_model),
@@ -156,6 +160,7 @@ private fun ConfigEditorItems(state: ModuleConfigState, launch: () -> Unit) {
                 }
             },
         showOperateIcon = deviceCatalog != null && selectedDatabaseBrandKey != null,
+        randomGenerator = modelRandomGenerator,
         setValue = { value ->
             applyDevicePreset(state, value)
         }
