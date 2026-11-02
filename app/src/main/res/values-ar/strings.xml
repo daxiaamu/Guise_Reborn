@@ -58,6 +58,7 @@
     <string name="net_sim_code">كود SIM</string>
     <string name="net_sim_name">اسم بطاقة SIM</string>
     <string name="net_sim_iso">رمز بلد SIM</string>
+    <string name="net_sim_random_summary">الحقول الثلاثة مترابطة: ضغطة واحدة على النرد تولّد الكود والاسم ورمز البلد المتناسقة معًا.</string>
     <string name="location_lng">خط الطول</string>
     <string name="location_lat">خط العرض</string>
     <string name="location_offset">إزاحة عشوائية</string>

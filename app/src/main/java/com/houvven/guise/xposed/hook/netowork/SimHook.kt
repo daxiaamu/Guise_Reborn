@@ -95,6 +95,8 @@ internal class SimHook : LoadPackageHandler {
     }
 
     private fun hookSimCountryIso() {
+        // 真机返回小写 ISO（官方口径是 lowercase 2 character format），手填 CN 会与真机形态不一致
+        val country = config.simCountry.lowercase()
         setSomeSameNameMethodResultForAnyClass(
             listOf(
                 TelephonyManager::class.java to "getSimCountryIso",
@@ -103,7 +105,7 @@ internal class SimHook : LoadPackageHandler {
                 TelephonyManager::class.java to "getNetworkCountryIsoForPhone",
                 SubscriptionInfo::class.java to "getCountryIso",
             ),
-            value = config.simCountry,
+            value = country,
         )
     }
 }

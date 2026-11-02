@@ -11,6 +11,36 @@ object Randoms {
     private const val ALPHANUMERIC =
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
     private const val HEX = "0123456789abcdef"
+    private const val HEX_UPPER = "0123456789ABCDEF"
+
+    // IEEE 注册表（standards-oui.ieee.org/oui/oui.csv）里的真实 MA-L 前缀。两个池不相交：
+    //   网卡侧给 WiFi-MAC，路由器侧给 BSSID —— 拿路由器厂商的 OUI 当手机网卡地址会自相矛盾。
+    //   池内每条都满足 U/L 位 = 0（全局唯一）。IEEE 全部 4 万条里有 18 条历史遗留的 U/L=1，
+    //   所以这里不假设「OUI 天然全局」，只收录核对过的条目。
+    internal val NIC_OUIS = listOf(
+        "444988", "e4c767", "a002a5",             // Intel Corporate
+        "88124e", "a0bd71", "00a0c6",             // Qualcomm
+        "00620b", "5c6f69",                       // Broadcom
+        "000c43", "000ce7", "0017a5",             // MediaTek
+        "00e04c", "fc934e",                       // Realtek
+        "cceb5e", "b8ea98", "f41a9c",             // Xiaomi Communications
+        "641b2f", "9c73b1", "388a06",             // Samsung Electronics
+        "e00630", "d8daf1", "54443b",             // HUAWEI TECHNOLOGIES
+        "e44097", "dcb4ca",                       // GUANGDONG OPPO
+    )
+    internal val ROUTER_OUIS = listOf(
+        "34f716", "54a703", "b0be76",             // TP-LINK
+        "488ad2", "503aa0", "5cde34",             // MERCURY
+        "b40f3b", "cc2d21", "b83a08",             // Tenda
+        "002618", "049226", "1831bf",             // ASUSTek
+        "405d82", "dcef09", "100c6b",             // NETGEAR
+        "04a959", "708185", "148477",             // New H3C
+        "f09fc2", "802aa8", "788a20",             // Ubiquiti
+    )
+    internal val SSID_PREFIXES = listOf(
+        "ChinaNet-", "CMCC-", "ChinaUnicom-", "TP-LINK_", "MERCURY_", "FAST_",
+        "Tenda_", "HUAWEI-", "Xiaomi_", "Redmi_", "OPPO_", "vivo_", "H3C_", "Ruijie_",
+    )
 
     /**
      * 生成一个指定长度的随机字符串
@@ -44,13 +74,36 @@ object Randoms {
     }
 
     /**
-     * 随机生成Mac地址
+     * 随机生成 WiFi 网卡的 MAC 地址（手机侧）。
+     *
+     * 用真实厂商 OUI 而不是 locally-administered 地址：第一个字节的 bit1 = 0 是全局唯一
+     * （厂商烧录）、= 1 是本地管理。本地管理地址的第二位十六进制必然是 2/6/a/e，任何 App
+     * 一行正则就能认出这是伪造，而真实网卡不会长这样。
      */
-    fun randomMacAddress(): String {
-        val octets = IntArray(6) { Random.nextInt(256) }
-        // Locally administered unicast address: valid for spoofing without claiming a vendor OUI.
-        octets[0] = (octets[0] or 0x02) and 0xFE
-        return octets.joinToString(":") { it.toString(16).padStart(2, '0') }
+    fun randomMacAddress(): String = randomOuiAddress(NIC_OUIS)
+
+    /** 随机生成 BSSID（AP 侧地址），池子与 [randomMacAddress] 分开，见 NIC_OUIS/ROUTER_OUIS 注释。 */
+    fun randomBssid(): String = randomOuiAddress(ROUTER_OUIS)
+
+    /**
+     * 随机生成 WiFi 名称。
+     *
+     * 走常见热点前缀 + 4 位十六进制尾巴，而不是纯随机串：真实 SSID 由厂商默认规则生成
+     * （光猫 ChinaNet-XXXX、路由 TP-LINK_XXXX），纯随机字符在扫到的热点列表里一眼假。
+     * 不含引号 —— WifiHook 给 getSSID 的返回值外面还会再包一层引号。
+     */
+    fun randomWifiSsid(): String {
+        val prefix = SSID_PREFIXES.random()
+        val suffix = buildString(4) { repeat(4) { append(HEX_UPPER.random()) } }
+        return if (Random.nextInt(4) == 0) "$prefix${suffix}_5G" else "$prefix$suffix"
+    }
+
+    private fun randomOuiAddress(pool: List<String>): String {
+        val oui = pool.random()
+        val tail = (0 until 3).joinToString(":") {
+            Random.nextInt(256).toString(16).padStart(2, '0')
+        }
+        return "${oui.substring(0, 2)}:${oui.substring(2, 4)}:${oui.substring(4, 6)}:$tail"
     }
 
 

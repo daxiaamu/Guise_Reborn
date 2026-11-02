@@ -6,6 +6,7 @@ import com.houvven.guise.module.preset.CarrierPreset
 import com.houvven.guise.module.preset.CarrierPresetRepository
 import com.houvven.guise.module.preset.PresetRepository
 import com.houvven.guise.module.preset.TimeZonePresetRepository
+import com.houvven.guise.module.preset.randomValidCarrier
 import com.houvven.guise.util.android.Randoms
 import com.houvven.guise.xposed.config.ModuleConfigState
 import kotlinx.coroutines.Dispatchers
@@ -19,7 +20,7 @@ suspend fun oneClickRandom(state: ModuleConfigState, context: Context) {
         val android = PresetRepository.get(context).androidVersions
             .filter { it.value.substringAfter('|').toIntOrNull()?.let { api -> api >= 29 } == true }
             .random()
-        val carrier = CarrierPresetRepository.get(context).random()
+        val carrier = CarrierPresetRepository.get(context).randomValidCarrier()
         RandomSelection(
             brand = brand.buildBrand,
             manufacturer = brand.manufacturer,
@@ -55,8 +56,8 @@ suspend fun oneClickRandom(state: ModuleConfigState, context: Context) {
 
         networkType.value = PresetRepository.get(context).networks.random().value
 
-        wifiSSID.value = Randoms.randomString(10)
-        wifiBSSID.value = Randoms.randomMacAddress()
+        wifiSSID.value = Randoms.randomWifiSsid()
+        wifiBSSID.value = Randoms.randomBssid()
         wifiMacAddress.value = Randoms.randomMacAddress()
 
         Randoms.randomCoordinates().let { (lat, lon) ->
@@ -66,7 +67,7 @@ suspend fun oneClickRandom(state: ModuleConfigState, context: Context) {
 
         simOperatorName.value = values.carrier.name
         simOperator.value = values.carrier.plmn
-        simCountry.value = values.carrier.countryCode
+        simCountry.value = values.carrier.countryCode.lowercase()
 
         androidId.value = Randoms.randomAndroidId()
         imei.value = Randoms.randomIMEI()
@@ -85,6 +86,19 @@ private data class RandomSelection(
     val android: String,
     val carrier: CarrierPreset,
 )
+
+/**
+ * 运营商三件套必须同源：PLMN 的 MCC 就是国家码的另一份来源（SimHook 会把 MCC/MNC 同时写进
+ * getSimOperator 与 CellIdentity），三者各自随机会出现「名字是 Vodafone、国家码是 cn」这种矛盾。
+ * 返回抽中的那条，供调用方取自己那一项写回输入框。
+ */
+fun ModuleConfigState.applyRandomCarrier(presets: List<CarrierPreset>): CarrierPreset {
+    val carrier = presets.randomValidCarrier()
+    simOperator.value = carrier.plmn
+    simOperatorName.value = carrier.name
+    simCountry.value = carrier.countryCode.lowercase()
+    return carrier
+}
 
 private fun String.fingerprintSafePart(): String =
     trim().replace(Regex("[\\s/:]+"), "_").ifBlank { "device" }
