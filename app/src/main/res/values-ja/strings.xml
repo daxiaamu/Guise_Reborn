@@ -53,6 +53,7 @@
     <string name="net_sim_code">SIM コード</string>
     <string name="net_sim_name">SIM 名</string>
     <string name="net_sim_iso">SIM ISO</string>
+    <string name="net_sim_random_summary">3 項目は連動しています。サイコロを 1 回押すと、対応するコード・名前・国コードが同時に生成されます。</string>
     <string name="id_imei_summary">どのデバイススロットから読み取ってもこの値を返します。デュアル SIM デバイスでは IMEI 1/2 が同じ値になります</string>
     <string name="id_phone_num">電話番号</string>
     <string name="location_lng">経度</string>

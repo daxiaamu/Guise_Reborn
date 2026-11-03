@@ -43,6 +43,7 @@
     <string name="net_sim_code">SIM运营商代码</string>
     <string name="net_sim_name">SIM运营商名称</string>
     <string name="net_sim_iso">SIM国家码</string>
+    <string name="net_sim_random_summary">三项联动：点一次骰子会同时生成互相匹配的运营商代码、名称与国家码。</string>
     <string name="id_phone_num">手机号码</string>
     <string name="location_lng">经度</string>
     <string name="location_lat">纬度</string>

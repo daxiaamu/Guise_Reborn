@@ -62,6 +62,7 @@
     <string name="net_sim_code">SIM Code</string>
     <string name="net_sim_name">SIM Name</string>
     <string name="net_sim_iso">SIM ISO</string>
+    <string name="net_sim_random_summary">Linked fields: one tap on the dice fills a matching code, name and country code together.</string>
     <string name="id_imei" translatable="false">IMEI</string>
     <string name="id_imei_summary">Returned for every device slot; IMEI 1 and 2 are identical on dual-SIM devices</string>
     <string name="id_phone_num">Phone Number</string>
