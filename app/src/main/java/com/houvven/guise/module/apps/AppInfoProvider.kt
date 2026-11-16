@@ -31,6 +31,9 @@ object AppInfoProvider {
         return map
     }
 
+    fun getInstalledPackageNames(): Set<String> =
+        getInstalledPackages().mapTo(mutableSetOf()) { it.packageName }
+
     private fun getInstalledPackages(): List<PackageInfo> =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
             packageManager.getInstalledPackages(PackageManager.PackageInfoFlags.of(0L))
