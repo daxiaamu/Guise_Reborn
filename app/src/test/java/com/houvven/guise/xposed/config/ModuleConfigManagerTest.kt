@@ -8,6 +8,14 @@ import org.junit.Test
 class ModuleConfigManagerTest {
 
     @Test
+    fun legacyJsonUsesDefaultRandomOffsetDistance() {
+        val config = ModuleConfig.fromJson("""{"randomOffset":true}""")
+
+        assertTrue(config.randomOffset)
+        assertEquals(ModuleConfig.DEFAULT_RANDOM_OFFSET_METERS, config.randomOffsetMeters, 0.0)
+    }
+
+    @Test
     fun stateChangesAreMappedWithoutReflection() {
         val config = ModuleConfig(packageName = "com.example.target")
         val manager = ModuleConfigManager.of(config)
@@ -20,6 +28,7 @@ class ModuleConfigManagerTest {
         manager.state.densityDpi.value = "480"
         manager.state.longitude.value = "116.4074"
         manager.state.randomOffset.value = true
+        manager.state.randomOffsetMeters.value = "250.5"
         manager.state.allowForceScreenshots.value = true
 
         assertTrue(manager.hasUnsavedChanges())
@@ -32,6 +41,7 @@ class ModuleConfigManagerTest {
         assertEquals(480, config.densityDpi)
         assertEquals(116.4074, config.longitude, 0.0)
         assertTrue(config.randomOffset)
+        assertEquals(250.5, config.randomOffsetMeters, 0.0)
         assertEquals(HooksValue.SCREENSHOTS_ENABLE, config.screenshotsFlag)
         assertFalse(manager.hasUnsavedChanges())
     }
@@ -50,11 +60,13 @@ class ModuleConfigManagerTest {
         manager.state.densityDpi.value = ""
         manager.state.longitude.value = ""
         manager.state.latitude.value = ""
+        manager.state.randomOffsetMeters.value = ""
         manager.updateConfigFromState()
 
         assertEquals(-1, config.sdkInt)
         assertEquals(-1, config.densityDpi)
         assertEquals(-1.0, config.longitude, 0.0)
         assertEquals(-1.0, config.latitude, 0.0)
+        assertEquals(ModuleConfig.DEFAULT_RANDOM_OFFSET_METERS, config.randomOffsetMeters, 0.0)
     }
 }

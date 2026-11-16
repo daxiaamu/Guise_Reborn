@@ -60,6 +60,8 @@
     <string name="location_offset">ランダムオフセット</string>
     <string name="location_coordinates_summary">GPS、ネットワーク、および統合位置情報の Android Location オブジェクトが返す座標を変更します。IP ジオロケーション、メーカー独自の API、およびリモートサービスには影響しません</string>
     <string name="location_offset_summary">対象アプリのプロセスが起動するたびに、設定された座標の周辺で小さなランダムなオフセットを生成します</string>
+    <string name="location_offset_distance">最大オフセット距離（m）</string>
+    <string name="location_offset_distance_summary">ランダムオフセットの最大半径を設定します。空欄の場合は 5 m です</string>
     <string name="location_wifi_fail">Wi-Fi 位置情報を非表示</string>
     <string name="location_wifi_fail_summary">周辺の Wi-Fi スキャン結果や、接続中の SSID、BSSID、MAC アドレス、および関連する識別子を隠蔽します。この設定は上記のカスタム Wi-Fi 値よりも優先されますが、Wi-Fi 機能自体を無効にしたり、位置情報サービスによる位置情報の取得を停止させたりするものではありません</string>
     <string name="build_config_version_name">バージョン名</string>

@@ -73,6 +73,8 @@
     <string name="location_offset">Random offset</string>
     <string name="location_coordinates_summary">Changes coordinates returned by Android Location objects for GPS, network, and fused locations; IP geolocation, vendor APIs, and remote services are unaffected</string>
     <string name="location_offset_summary">Generates one small random offset around the configured coordinates each time the target app process starts</string>
+    <string name="location_offset_distance">Maximum offset distance (m)</string>
+    <string name="location_offset_distance_summary">Maximum radius of the random offset; leave empty to use 5 m</string>
     <string name="location_wifi_fail">Hide Wi-Fi location data</string>
     <string name="location_wifi_fail_summary">Hides nearby Wi-Fi scans and connected SSID, BSSID, MAC, and related identifiers, taking priority over the custom Wi-Fi values above; it does not disable Wi-Fi or stop location services from returning a location</string>
 

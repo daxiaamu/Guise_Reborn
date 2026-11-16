@@ -14,6 +14,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
 import com.houvven.guise.xposed.LoadPackageHandler
+import com.houvven.guise.xposed.config.ModuleConfig
 import com.houvven.ktx_xposed.hook.afterHookAllMethods
 import com.houvven.ktx_xposed.hook.afterHookedMethod
 import com.houvven.ktx_xposed.hook.beforeHookAllMethods
@@ -88,8 +89,17 @@ class LocationHook : LoadPackageHandler, LocationHookBase() {
         val spoofCoordinates = longitude != UNSET_COORDINATE || latitude != UNSET_COORDINATE
         if (spoofCoordinates) {
             if (config.randomOffset) {
-                if (latitude != UNSET_COORDINATE) latitude += randomOffset()
-                if (longitude != UNSET_COORDINATE) longitude += randomOffset()
+                val radiusMeters = config.randomOffsetMeters
+                    .takeIf { it.isFinite() && it >= 0.0 }
+                    ?.coerceAtMost(ModuleConfig.MAX_RANDOM_OFFSET_METERS)
+                    ?: ModuleConfig.DEFAULT_RANDOM_OFFSET_METERS
+                val offset = LocationOffset.randomWithinRadius(
+                    latitude = latitude.takeUnless { it == UNSET_COORDINATE },
+                    longitude = longitude.takeUnless { it == UNSET_COORDINATE },
+                    radiusMeters = radiusMeters,
+                )
+                offset.latitude?.let { latitude = it }
+                offset.longitude?.let { longitude = it }
             }
             log("Spoofing coordinates lat=$latitude lon=$longitude")
             fakeCoordinates()
@@ -490,8 +500,6 @@ class LocationHook : LoadPackageHandler, LocationHookBase() {
 
     private fun hasCompleteCoordinates(): Boolean =
         longitude != UNSET_COORDINATE && latitude != UNSET_COORDINATE
-
-    private fun randomOffset(): Double = (Math.random() - 0.5) * 0.0001
 
     private fun buildFakeLocation(): Location =
         modifyLocation(Location(LocationManager.GPS_PROVIDER))

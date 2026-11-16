@@ -38,6 +38,7 @@ data class ModuleConfig(
     var longitude: Double = -1.0,
     var latitude: Double = -1.0,
     var randomOffset: Boolean = false,
+    var randomOffsetMeters: Double = DEFAULT_RANDOM_OFFSET_METERS,
     var makeWifiLocationFail: Boolean = false,
     var makeCellLocationFail: Boolean = false,
 
@@ -64,6 +65,9 @@ data class ModuleConfig(
     fun toModuleConfigState() = ModuleConfigState.of(this)
 
     companion object {
+        const val DEFAULT_RANDOM_OFFSET_METERS = 5.0
+        const val MAX_RANDOM_OFFSET_METERS = 100_000.0
+
         private val json = Json { ignoreUnknownKeys = true }
 
         fun fromJson(value: String) = json.decodeFromString(serializer(), value)
