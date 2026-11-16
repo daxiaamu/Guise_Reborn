@@ -74,17 +74,34 @@ internal fun TemplateQrScannerScreen() {
     var previewView by remember { mutableStateOf<PreviewView?>(null) }
     val handled = remember { AtomicBoolean(false) }
     val lastScanAttempt = remember { AtomicLong(0L) }
+    val payloadAssembler = remember { QrCodeCodec.PayloadAssembler() }
+    var qrProgress by remember { mutableStateOf<QrCodeCodec.PayloadAssemblyResult.Progress?>(null) }
 
-    suspend fun accept(content: String) {
-        if (!handled.compareAndSet(false, true)) return
-        runCatching { TemplateTransfer.decode(content) }
-            .onSuccess {
-                LauncherState.addTemplates(it)
-                GlobalSnackbarHost.showByDismissPrevious(resources.getString(R.string.import_success))
-                navController.popBackStack()
-            }
-            .onFailure {
-                handled.set(false)
+    suspend fun accept(payload: String) {
+        if (handled.get()) return
+        runCatching { payloadAssembler.accept(payload) }
+            .onSuccess { result ->
+                when (result) {
+                    is QrCodeCodec.PayloadAssemblyResult.Progress -> qrProgress = result
+                    is QrCodeCodec.PayloadAssemblyResult.Complete -> {
+                        if (!handled.compareAndSet(false, true)) return@onSuccess
+                        runCatching { TemplateTransfer.decode(result.text) }
+                            .onSuccess {
+                                LauncherState.addTemplates(it)
+                                GlobalSnackbarHost.showByDismissPrevious(
+                                    resources.getString(R.string.import_success)
+                                )
+                                navController.popBackStack()
+                            }
+                            .onFailure {
+                                handled.set(false)
+                                GlobalSnackbarHost.showOnErrorByDismissPrevious(
+                                    resources.getString(R.string.import_failed, it.message.orEmpty())
+                                )
+                            }
+                    }
+                }
+            }.onFailure {
                 GlobalSnackbarHost.showOnErrorByDismissPrevious(
                     resources.getString(R.string.import_failed, it.message.orEmpty())
                 )
@@ -190,6 +207,18 @@ internal fun TemplateQrScannerScreen() {
                 verticalArrangement = Arrangement.Bottom,
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
+                qrProgress?.let { progress ->
+                    Text(
+                        text = stringResource(
+                            R.string.qr_parts_scanned,
+                            progress.receivedParts,
+                            progress.totalParts,
+                        ),
+                        color = ComposeColor.White,
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.padding(bottom = 12.dp),
+                    )
+                }
                 Button(onClick = { imageLauncher.launch("image/*") }) {
                     Icon(Icons.Default.Image, contentDescription = null)
                     Text(stringResource(R.string.choose_qr_image), modifier = Modifier.padding(start = 8.dp))

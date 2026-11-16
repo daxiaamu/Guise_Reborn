@@ -6,6 +6,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ListItem
@@ -13,6 +14,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,7 +31,7 @@ import com.houvven.guise.db.Template
 import com.houvven.guise.db.TemplateTransfer
 import com.houvven.guise.ui.GlobalSnackbarHost
 import com.houvven.guise.ui.routing.LauncherState
-import com.houvven.guise.ui.utils.encodeTemplateQrBitmap
+import com.houvven.guise.ui.utils.encodeTemplateQrBitmaps
 import com.houvven.guise.ui.utils.saveBitmapToDownloadDir
 import com.houvven.guise.ui.utils.saveFileToDownloadDir
 import java.io.Reader
@@ -52,7 +54,13 @@ internal fun TemplateTransferDialog(
     val scope = rememberCoroutineScope()
     var showUrlDialog by remember { mutableStateOf(false) }
     var importUrl by remember { mutableStateOf("") }
-    var qrPreview by remember { mutableStateOf<Bitmap?>(null) }
+    var qrPreview by remember { mutableStateOf<List<Bitmap>?>(null) }
+    var qrPage by remember { mutableStateOf(0) }
+
+    DisposableEffect(qrPreview) {
+        val currentPreview = qrPreview
+        onDispose { currentPreview?.forEach(Bitmap::recycle) }
+    }
 
     suspend fun accept(result: Result<List<Template>>) {
         val imported = result.getOrNull()
@@ -77,6 +85,7 @@ internal fun TemplateTransferDialog(
                     } ?: error("Unable to open selected file")
                 }
             })
+            onDismiss()
         }
     }
 
@@ -98,14 +107,18 @@ internal fun TemplateTransferDialog(
                 resources.getString(R.string.export_failed, it.message.orEmpty())
             )
         }
+        onDismiss()
     }
 
-    fun createQr(onReady: suspend (Bitmap) -> Unit) = scope.launch {
+    fun createQr() = scope.launch {
         runCatching {
-            val bitmap = withContext(Dispatchers.Default) {
-                encodeTemplateQrBitmap(TemplateTransfer.encode(LauncherState.templates.value))
+            withContext(Dispatchers.Default) {
+                encodeTemplateQrBitmaps(TemplateTransfer.encode(LauncherState.templates.value))
             }
-            try { onReady(bitmap) } finally { bitmap.recycle() }
+        }.onSuccess { bitmaps ->
+            qrPreview?.forEach(Bitmap::recycle)
+            qrPage = 0
+            qrPreview = bitmaps
         }.onFailure {
             GlobalSnackbarHost.showOnErrorByDismissPrevious(
                 resources.getString(R.string.export_failed, it.message.orEmpty())
@@ -120,7 +133,7 @@ internal fun TemplateTransferDialog(
             Column {
                 if (mode == TemplateTransferMode.IMPORT) {
                     TransferChoice(stringResource(R.string.import_json_file)) {
-                        onDismiss(); fileLauncher.launch("application/json")
+                        fileLauncher.launch("application/json")
                     }
                     TransferChoice(stringResource(R.string.scan_qr_code)) {
                         onDismiss(); onScanQr()
@@ -130,13 +143,10 @@ internal fun TemplateTransferDialog(
                     }
                 } else {
                     TransferChoice(stringResource(R.string.export_json_file)) {
-                        onDismiss(); exportJson()
+                        exportJson()
                     }
                     TransferChoice(stringResource(R.string.show_qr_code)) {
-                        createQr { source ->
-                            qrPreview?.recycle()
-                            qrPreview = source.copy(Bitmap.Config.ARGB_8888, false)
-                        }
+                        createQr()
                     }
 
                 }
@@ -163,11 +173,11 @@ internal fun TemplateTransferDialog(
                 TextButton(enabled = importUrl.isNotBlank(), onClick = {
                     val source = importUrl.trim()
                     showUrlDialog = false
-                    onDismiss()
                     scope.launch {
                         accept(withContext(Dispatchers.IO) {
                             runCatching { TemplateTransfer.decode(fetchTemplateJson(source)) }
                         })
+                        onDismiss()
                     }
                 }) { Text(stringResource(R.string.import_data)) }
             },
@@ -179,19 +189,44 @@ internal fun TemplateTransferDialog(
         )
     }
 
-    qrPreview?.let { bitmap ->
+    qrPreview?.let { bitmaps ->
+        val bitmap = bitmaps[qrPage]
+        fun closePreview() {
+            bitmaps.forEach(Bitmap::recycle)
+            qrPreview = null
+            onDismiss()
+        }
         AlertDialog(
-            onDismissRequest = { bitmap.recycle(); qrPreview = null; onDismiss() },
-            title = { Text(stringResource(R.string.template_qr_code)) },
-            text = {
-                Image(
-                    bitmap = bitmap.asImageBitmap(),
-                    contentDescription = stringResource(R.string.template_qr_code),
-                    modifier = Modifier.fillMaxWidth(),
+            onDismissRequest = ::closePreview,
+            title = {
+                Text(
+                    if (bitmaps.size == 1) stringResource(R.string.template_qr_code)
+                    else stringResource(R.string.template_qr_code_part, qrPage + 1, bitmaps.size)
                 )
             },
+            text = {
+                Column {
+                    Image(
+                        bitmap = bitmap.asImageBitmap(),
+                        contentDescription = stringResource(R.string.template_qr_code),
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    if (bitmaps.size > 1) {
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            TextButton(
+                                enabled = qrPage > 0,
+                                onClick = { qrPage-- },
+                            ) { Text(stringResource(R.string.previous_qr_code)) }
+                            TextButton(
+                                enabled = qrPage < bitmaps.lastIndex,
+                                onClick = { qrPage++ },
+                            ) { Text(stringResource(R.string.next_qr_code)) }
+                        }
+                    }
+                }
+            },
             confirmButton = {
-                TextButton(onClick = { bitmap.recycle(); qrPreview = null; onDismiss() }) {
+                TextButton(onClick = ::closePreview) {
                     Text(stringResource(R.string.close))
                 }
             },
@@ -200,18 +235,21 @@ internal fun TemplateTransferDialog(
                     scope.launch {
                         runCatching {
                             withContext(Dispatchers.IO) {
-                                saveBitmapToDownloadDir(
-                                    "Guise-Templates-${System.currentTimeMillis()}.png",
-                                    bitmap,
-                                ).getOrThrow()
+                                val timestamp = System.currentTimeMillis()
+                                bitmaps.mapIndexed { index, part ->
+                                    val suffix = if (bitmaps.size == 1) "" else
+                                        "-part-${index + 1}-of-${bitmaps.size}"
+                                    saveBitmapToDownloadDir(
+                                        "Guise-Templates-$timestamp$suffix.png",
+                                        part,
+                                    ).getOrThrow()
+                                }
                             }
-                        }.onSuccess { path ->
+                        }.onSuccess { paths ->
                             GlobalSnackbarHost.showByDismissPrevious(
-                                resources.getString(R.string.export_success, path)
+                                resources.getString(R.string.export_success, paths.last())
                             )
-                            bitmap.recycle()
-                            qrPreview = null
-                            onDismiss()
+                            closePreview()
                         }.onFailure {
                             GlobalSnackbarHost.showOnErrorByDismissPrevious(
                                 resources.getString(R.string.export_failed, it.message.orEmpty())

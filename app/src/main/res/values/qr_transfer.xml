@@ -10,6 +10,10 @@
     <string name="show_qr_code">Export QR code</string>
     <string name="save_qr_image">Save QR image</string>
     <string name="template_qr_code">Template QR code</string>
+    <string name="template_qr_code_part">Template QR code %1$d of %2$d</string>
+    <string name="previous_qr_code">Previous</string>
+    <string name="next_qr_code">Next</string>
+    <string name="qr_parts_scanned">Scanned %1$d of %2$d QR codes</string>
     <string name="choose_qr_image">Choose QR image</string>
     <string name="camera_permission_required">Camera permission is required to scan QR codes</string>
     <string name="save">Save</string>
