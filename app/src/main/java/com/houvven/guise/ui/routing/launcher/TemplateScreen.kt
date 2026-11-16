@@ -1,5 +1,6 @@
 package com.houvven.guise.ui.routing.launcher
 
+import android.graphics.Bitmap
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -67,7 +68,7 @@ import com.houvven.guise.ui.routing.LocalNavController
 import com.houvven.guise.ui.routing.NavRoutingTypes
 import com.houvven.guise.ui.routing.navigateWithTemplate
 import com.houvven.guise.ui.routing.template.EnableTemplateDialog
-import com.houvven.guise.ui.utils.encodeTemplateQrBitmap
+import com.houvven.guise.ui.utils.encodeTemplateQrBitmaps
 import com.houvven.guise.ui.utils.saveBitmapToDownloadDir
 import com.houvven.guise.xposed.PackageConfig
 import com.houvven.guise.xposed.config.ModuleConfig
@@ -242,18 +243,22 @@ private fun TemplateCard(template: Template, appliedAppCount: Int) {
                 expanded = false
                 scope.launch {
                     val result = runCatching {
-                        val bitmap = withContext(Dispatchers.Default) {
-                            encodeTemplateQrBitmap(TemplateTransfer.encode(listOf(template)))
+                        val bitmaps = withContext(Dispatchers.Default) {
+                            encodeTemplateQrBitmaps(TemplateTransfer.encode(listOf(template)))
                         }
                         try {
                             withContext(Dispatchers.IO) {
-                                saveBitmapToDownloadDir(
-                                    "Guise-Template-${template.id}.png",
-                                    bitmap,
-                                ).getOrThrow()
+                                bitmaps.mapIndexed { index, bitmap ->
+                                    val suffix = if (bitmaps.size == 1) "" else
+                                        "-part-${index + 1}-of-${bitmaps.size}"
+                                    saveBitmapToDownloadDir(
+                                        "Guise-Template-${template.id}$suffix.png",
+                                        bitmap,
+                                    ).getOrThrow()
+                                }.last()
                             }
                         } finally {
-                            bitmap.recycle()
+                            bitmaps.forEach(Bitmap::recycle)
                         }
                     }
                     result.onSuccess {

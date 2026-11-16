@@ -10,6 +10,10 @@
     <string name="show_qr_code">导出二维码</string>
     <string name="save_qr_image">保存二维码图片</string>
     <string name="template_qr_code">模板二维码</string>
+    <string name="template_qr_code_part">模板二维码 %1$d/%2$d</string>
+    <string name="previous_qr_code">上一个</string>
+    <string name="next_qr_code">下一个</string>
+    <string name="qr_parts_scanned">已扫描 %1$d/%2$d 个二维码</string>
     <string name="choose_qr_image">选择二维码图片</string>
     <string name="camera_permission_required">扫描二维码需要相机权限</string>
     <string name="save">保存</string>

@@ -10,6 +10,10 @@
     <string name="show_qr_code">QR コードをエクスポート</string>
     <string name="save_qr_image">QR コード画像を保存</string>
     <string name="template_qr_code">テンプレート QR コード</string>
+    <string name="template_qr_code_part">テンプレート QR コード %1$d/%2$d</string>
+    <string name="previous_qr_code">前へ</string>
+    <string name="next_qr_code">次へ</string>
+    <string name="qr_parts_scanned">%2$d 個中 %1$d 個の QR コードをスキャン済み</string>
     <string name="choose_qr_image">QR コード画像を選択</string>
     <string name="camera_permission_required">QR コードのスキャンにはカメラ権限が必要です</string>
     <string name="save">保存</string>
