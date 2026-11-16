@@ -63,6 +63,8 @@
     <string name="location_offset">إزاحة عشوائية</string>
     <string name="location_coordinates_summary">تغيّر الإحداثيات التي تعيدها كائنات Android Location لمواقع GPS والشبكة والموقع المدمج؛ ولا تتأثر خدمات تحديد الموقع عبر IP أو واجهات الشركات المصنّعة أو الخدمات البعيدة</string>
     <string name="location_offset_summary">تنشئ إزاحة عشوائية صغيرة واحدة حول الإحداثيات المحددة في كل مرة تبدأ فيها عملية التطبيق المستهدف</string>
+    <string name="location_offset_distance">أقصى مسافة للإزاحة (م)</string>
+    <string name="location_offset_distance_summary">تحدد أقصى نصف قطر للإزاحة العشوائية؛ اتركها فارغة لاستخدام 5 م</string>
     <string name="location_wifi_fail">إخفاء بيانات موقع Wi-Fi</string>
     <string name="location_wifi_fail_summary">تخفي نتائج مسح Wi-Fi القريبة ومعرّفات SSID وBSSID وMAC للشبكة المتصلة، ولها أولوية على قيم Wi-Fi المخصصة أعلاه؛ ولا تعطل Wi-Fi أو تمنع خدمات الموقع من إرجاع موقع</string>
     <string name="other_battery_level">مستوى البطارية</string>

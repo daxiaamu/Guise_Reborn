@@ -49,6 +49,8 @@
     <string name="location_offset">随机偏移</string>
     <string name="location_coordinates_summary">修改 Android Location 对象返回的坐标，覆盖 GPS、网络和融合定位；不影响 IP 定位、厂商私有接口或远程服务结果</string>
     <string name="location_offset_summary">目标应用进程每次启动时，在所填坐标附近生成一次小范围随机偏移</string>
+    <string name="location_offset_distance">最大偏移距离（米）</string>
+    <string name="location_offset_distance_summary">设置随机偏移的最大半径；留空时使用 5 米</string>
     <string name="location_wifi_fail">隐藏 Wi-Fi 定位信息</string>
     <string name="location_wifi_fail_summary">隐藏附近 Wi-Fi 扫描结果及当前连接的 SSID、BSSID、MAC 等标识，并优先于上方自定义 Wi-Fi 配置；不会关闭 Wi-Fi，也不会阻止定位服务返回位置</string>
     <string name="other_battery_level">电量</string>

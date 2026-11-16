@@ -238,6 +238,9 @@ private constructor(
         longitude = state.longitude.value.toDoubleOrNull() ?: -1.0
         latitude = state.latitude.value.toDoubleOrNull() ?: -1.0
         randomOffset = state.randomOffset.value
+        randomOffsetMeters = state.randomOffsetMeters.value.toDoubleOrNull()
+            ?.takeIf { it.isFinite() && it in 0.0..ModuleConfig.MAX_RANDOM_OFFSET_METERS }
+            ?: ModuleConfig.DEFAULT_RANDOM_OFFSET_METERS
         makeWifiLocationFail = state.makeWifiLocationFail.value
         makeCellLocationFail = state.makeCellLocationFail.value
         versionCode = state.versionCode.value.toIntOrNull() ?: -1

@@ -49,6 +49,7 @@ import com.houvven.guise.module.preset.PresetRepository
 import com.houvven.guise.module.preset.TimeZonePresetRepository
 import com.houvven.guise.ui.components.SearchBox
 import com.houvven.guise.util.android.Randoms
+import com.houvven.guise.xposed.config.ModuleConfig
 import com.houvven.guise.xposed.config.ModuleConfigState
 import kotlin.math.roundToInt
 
@@ -264,6 +265,18 @@ private fun ConfigEditorItems(state: ModuleConfigState, launch: () -> Unit) {
         stringResource(R.string.location_offset),
         supportingText = stringResource(R.string.location_offset_summary),
     )
+    if (state.randomOffset.value) {
+        InputBox(
+            state = state.randomOffsetMeters,
+            label = stringResource(R.string.location_offset_distance),
+            supportingText = stringResource(R.string.location_offset_distance_summary),
+            validate = { value ->
+                value.isEmpty() || value.toDoubleOrNull()?.let {
+                    it.isFinite() && it in 0.0..ModuleConfig.MAX_RANDOM_OFFSET_METERS
+                } == true
+            },
+        )
+    }
     ContainerSwitch(
         state.makeWifiLocationFail,
         stringResource(R.string.location_wifi_fail),
